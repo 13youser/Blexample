@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="font_lvl_m1">12sp</dimen>
+    <dimen name="font_lvl_0">15sp</dimen>
+    <dimen name="font_lvl_1">18sp</dimen>
+    <dimen name="font_lvl_2">21sp</dimen>
+    <dimen name="font_lvl_3">25sp</dimen>
+    <dimen name="font_lvl_4">28sp</dimen>
+    <dimen name="font_lvl_5">32sp</dimen>
+    <dimen name="font_lvl_6">35sp</dimen>
+    <dimen name="font_lvl_keyboard">35sp</dimen>
+
+    <dimen name="indent_small">4dp</dimen>
+    <dimen name="indent_middle">8dp</dimen>
+    <dimen name="indent_large">16dp</dimen>
+    <dimen name="indent_xlarge">32dp</dimen>
+    <dimen name="indent_screen">@dimen/indent_middle</dimen>
+
+</resources>
