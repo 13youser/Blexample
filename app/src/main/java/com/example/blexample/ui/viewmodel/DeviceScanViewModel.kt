@@ -4,63 +4,103 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.os.Handler
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.blexample.ui.base.BaseViewModel
+import io.reactivex.Completable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.Callable
 
 class DeviceScanViewModel: BaseViewModel() {
 
     companion object {
         // Stops scanning after 10 seconds.
-        const val SCAN_PERIOD: Long = 10000
+        const val SCAN_PERIOD: Long = 13000
     }
 
+    private val callableStartScanning = Callable<Unit> {
+        leScanCallback?.let {
+            leScanner?.startScan(it)
+        }
+    }
+    private val callableStopScanning = Callable<Unit> {
+        leScanCallback?.let {
+            leScanner?.stopScan(it)
+        }
+    }
+    private val runnableForPendingStopScanning = Runnable { callStopScanLe() }
     private val handler = Handler()
-
-    private val _scanningProgressUI = MutableLiveData<Boolean>()
-    val scanningProgressUI: LiveData<Boolean> get() = _scanningProgressUI
+    private val _scanningCalled = MutableLiveData<Boolean>()
+    val scanningCalled: LiveData<Boolean> get() = _scanningCalled
 
     var bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     var leScanner: BluetoothLeScanner? = bluetoothAdapter?.bluetoothLeScanner
     var leScanCallback: ScanCallback? = null
 
-    val taskStopScanning = Runnable {
+    /**
+     * Start BLE devices scanning if it has not been started yet, otherwise stop
+     */
+    fun switchScanLeDevice() {
         leScanCallback?.let {
-            println(":> scan :: task-FALSE")
-            stopScanningLe(it)
-        }
-    }
-
-    fun scanLeDevice() {
-        leScanCallback?.let {
-            if (_scanningProgressUI.value != true) { // Stops scanning after a pre-defined scan period.
-                handler.postDelayed(taskStopScanning, SCAN_PERIOD)
-
-                startScanningLe(it)
-                    .also { println(":> scan :: TRUE") }
+            if (_scanningCalled.value != true) { // Stops scanning after a pre-defined scan period.
+                callStartScanLe()
             } else {
-                stopScanningLe(it)
-                    .also { println(":> scan :: ELSE-FALSE") }
+                callStopScanLe()
             }
         }
     }
 
+    /**
+     * Stop BLE devices scanning
+     */
     fun stopScanLeDevice() {
-        leScanCallback?.let {
-            stopScanningLe(it)
-                .also { println(":> scan :: stopScanLeDevice-FALSE") }
-        }
+        callStopScanLe()
     }
 
-    private fun startScanningLe(it: ScanCallback) {
-        _scanningProgressUI.value = true
-        leScanner?.startScan(it)
+    private fun callStartScanLe() {
+        _scanningCalled.value = true
+
+        handler.postDelayed(
+            runnableForPendingStopScanning, SCAN_PERIOD
+        )
+
+        disposableManager.add(
+            Completable.fromCallable(callableStartScanning)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        Log.d(TAG, ":> scan :: SUCCESS-START---Callable")
+                    },
+                    {
+                        Log.e(TAG, ":> scan :: FAILED-START---Callable")
+                    }
+                )
+        )
     }
 
-    private fun stopScanningLe(it: ScanCallback) {
-        handler.removeCallbacks(taskStopScanning)
+    private fun callStopScanLe() {
+        _scanningCalled.value = false
 
-        _scanningProgressUI.value = false
-        leScanner?.stopScan(it)
+        handler.removeCallbacks(
+            runnableForPendingStopScanning
+        )
+
+        disposableManager.add(
+            Completable.fromCallable(callableStopScanning)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        Log.d(TAG, ":> scan :: SUCCESS-STOP---Callable")
+                    },
+                    {
+                        Log.e(TAG, ":> scan :: FAILED-STOP---Callable")
+                    }
+                )
+        )
     }
+
 }

@@ -5,6 +5,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -64,11 +65,11 @@ class DeviceScanFragment : BaseFragment() {
         binding.listView.adapter = leDeviceListAdapter
 
         binding.buttonScanControl.setOnClickListener {
-            when(viewModel.scanningProgressUI.value) {
+            when(viewModel.scanningCalled.value) {
                 true -> binding.buttonScanControl.text = getString(R.string.scan)
                 false -> binding.buttonScanControl.text = getString(R.string.stop)
             }
-            viewModel.scanLeDevice()
+            viewModel.switchScanLeDevice()
         }
     }
 
@@ -77,24 +78,29 @@ class DeviceScanFragment : BaseFragment() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
 
-                println(":>> onScanResult :: device_name=${result.device.name}")
+                Log.i(TAG, ":>> onScanResult :: device_name=${result.device.name}")
+//                println(":>> onScanResult :: device_name=${result.device.name}")
 
                 leDeviceListAdapter?.add(device = result.device)
             }
             override fun onScanFailed(errorCode: Int) {
                 super.onScanFailed(errorCode)
 
-                println(":>> onScanFailed :: errorCode=$errorCode")
+                Log.e(TAG, ":>> onScanFailed :: errorCode=$errorCode")
+//                println(":>> onScanFailed :: errorCode=$errorCode")
             }
         }
-        viewModel.scanningProgressUI.observe(viewLifecycleOwner, { scanning ->
-            binding.buttonScanControl.text = getString(
-                if (scanning)
-                    R.string.stop
-                else
-                    R.string.scan
-            )
-            binding.progressScanning.invisible(!scanning)
+        viewModel.scanningCalled.observe(viewLifecycleOwner, { scanning ->
+            view?.post {
+                binding.buttonScanControl.text = getString(
+                    if (scanning)
+                        R.string.stop
+                    else
+                        R.string.scan
+                )
+                binding.progressScanning.invisible(!scanning)
+            }
+
         })
     }
 
@@ -110,17 +116,21 @@ class DeviceScanFragment : BaseFragment() {
             REQUEST_ENABLE_BT -> {
                 when(resultCode) {
                     AppCompatActivity.RESULT_OK -> {
-                        println(":> Enabling Bluetooth succeeds")
+                        Log.d(TAG, ":> Enabling Bluetooth succeeds")
+//                        println(":> Enabling Bluetooth succeeds")
                     }
                     AppCompatActivity.RESULT_CANCELED -> {
-                        println(":> Bluetooth was not enabled due to an error " +
+                        Log.d(TAG, ":> Bluetooth was not enabled due to an error " +
                                 "(or the user responded \"Deny\")")
+//                        println(":> Bluetooth was not enabled due to an error " +
+//                                "(or the user responded \"Deny\")")
 //                        requestBluetoothEnable()
                     }
                 }
             }
             else -> {
-                println(":> Unknown request code")
+                Log.e(TAG, ":> Unknown request code")
+//                println(":> Unknown request code")
             }
         }
         super.onActivityResult(requestCode, resultCode, data)
