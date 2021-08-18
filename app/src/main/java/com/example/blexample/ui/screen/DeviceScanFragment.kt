@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
+import com.example.blexample.R
 import com.example.blexample.databinding.FragmentDeviceScanBinding
 import com.example.blexample.ui.adapter.LeDeviceListAdapter
 import com.example.blexample.ui.base.BaseFragment
@@ -45,6 +45,7 @@ class DeviceScanFragment : BaseFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.stopScanLeDevice()
         _binding = null
     }
 
@@ -56,12 +57,19 @@ class DeviceScanFragment : BaseFragment() {
 
         initView()
         observeEvents()
-        viewModel.scanLeDevice()
     }
 
     private fun initView() {
         leDeviceListAdapter = LeDeviceListAdapter(context = requireContext())
         binding.listView.adapter = leDeviceListAdapter
+
+        binding.buttonScanControl.setOnClickListener {
+            when(viewModel.scanningProgressUI.value) {
+                true -> binding.buttonScanControl.text = getString(R.string.scan)
+                false -> binding.buttonScanControl.text = getString(R.string.stop)
+            }
+            viewModel.scanLeDevice()
+        }
     }
 
     private fun observeEvents() {
@@ -79,14 +87,18 @@ class DeviceScanFragment : BaseFragment() {
                 println(":>> onScanFailed :: errorCode=$errorCode")
             }
         }
-        viewModel.scanningLiveData.observe(viewLifecycleOwner, {
-            println(":> scanningLiveData $it")
-            binding.progressScanning.invisible(!it)
+        viewModel.scanningProgressUI.observe(viewLifecycleOwner, { scanning ->
+            binding.buttonScanControl.text = getString(
+                if (scanning)
+                    R.string.stop
+                else
+                    R.string.scan
+            )
+            binding.progressScanning.invisible(!scanning)
         })
     }
 
     private fun requestBluetoothEnable() {
-        println(":> requestBluetoothEnable")
         startActivityForResult(
             Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),
             REQUEST_ENABLE_BT

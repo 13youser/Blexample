@@ -19,6 +19,7 @@
             android:id="@+id/toolbar"
             android:minHeight="?attr/actionBarSize"
             android:theme="@style/Theme.Blexample.PopupOverlay"
+            android:background="@color/color_progress_bk"
             />
     </com.google.android.material.appbar.AppBarLayout>
 
