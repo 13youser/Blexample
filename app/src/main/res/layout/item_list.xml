@@ -7,10 +7,18 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/textItemTitle"
+        android:id="@+id/textItemName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="Title"
+        tools:text="Name"
+        android:textSize="21sp"
+        />
+
+    <TextView
+        android:id="@+id/textItemAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Address"
         android:textSize="21sp"
         />
 

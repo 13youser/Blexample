@@ -2,8 +2,9 @@
 <resources>
     <color name="colorBackground">@color/white</color>
     <color name="color_text">@color/black_light</color>
+    <color name="color_progress_bk">@color/color_lite_bk</color>
 
-
+    <color name="color_lite_bk">#ECECEC</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

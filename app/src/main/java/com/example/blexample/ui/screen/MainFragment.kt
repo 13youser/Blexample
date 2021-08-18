@@ -1,21 +1,30 @@
 package com.example.blexample.ui.screen
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.blexample.R
+import com.example.blexample.databinding.FragmentMainBinding
+import com.example.blexample.ui.base.BaseFragment
 
 
-class MainFragment : Fragment() {
+class MainFragment : BaseFragment() {
+
+    private var _binding: FragmentMainBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_main, container, false)
+    ): View {
+        _binding = FragmentMainBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {
@@ -24,5 +33,13 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        initView()
+    }
+
+    private fun initView() {
+        binding.buttonGo.setOnClickListener {
+            it.navigateAction(R.id.action_mainFragment_to_listFragment)
+        }
     }
 }

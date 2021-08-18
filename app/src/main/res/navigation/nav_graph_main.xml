@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.example.blexample.ui.screen.MainFragment"
-        android:label="fragment_main"
+        android:label="@string/title_screen_main"
         tools:layout="@layout/fragment_main" >
         <action
             android:id="@+id/action_mainFragment_to_listFragment"
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/listFragment"
-        android:name="com.example.blexample.ui.screen.ListFragment"
-        android:label="fragment_list"
-        tools:layout="@layout/fragment_list" />
+        android:name="com.example.blexample.ui.screen.DeviceScanFragment"
+        android:label="@string/title_screen_scanning"
+        tools:layout="@layout/fragment_device_scan" />
 </navigation>
