@@ -36,11 +36,12 @@ class LeDeviceListAdapter(
             val device = listDevice[position]
             v.findViewById<TextView>(R.id.textItemName).text = device.name
             v.findViewById<TextView>(R.id.textItemAddress).text = device.address
-        }
+        } else println(":> ELSE DEVICE TO UI")
         return v
     }
 
     fun add(device: BluetoothDevice?) {
+        println(":> adding device=$device")
         device?.let {
             listDevice.add(it)
             notifyDataSetChanged()

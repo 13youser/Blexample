@@ -1,12 +1,16 @@
 <resources>
     <string name="app_name">Blexample</string>
+    <string name="ok">O,key</string>
+    <string name="no">No</string>
+    <string name="cancel">Cancel</string>
     <string name="title_screen_main">Main screen</string>
     <string name="title_screen_scanning">Scanning screen</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="scan">Scan</string>
+    <string name="title_permission">With your permission</string>
+    <string name="title_oops">Oops!</string>
+    <string name="msg_oops">Something went wrong. Try later</string>
+    <string name="msg_enable_geo">To work with Bluetooth, you need to enable Geolocation</string>
     <string name="scanning">Scanning!</string>
+    <string name="scan">Scan</string>
     <string name="stop">Stop</string>
 
 </resources>
