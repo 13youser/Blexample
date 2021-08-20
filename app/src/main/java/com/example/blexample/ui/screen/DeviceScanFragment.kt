@@ -138,6 +138,7 @@ class DeviceScanFragment : BaseFragment() {
                     else
                         R.string.scan
                 )
+                binding.textScanning.invisible(!scanning)
                 binding.progressScanning.invisible(!scanning)
             }
 
