@@ -24,8 +24,8 @@ class DeviceScanViewModel: BaseViewModel() {
     private val callableStartScanning = Callable<Unit> {
         leScanCallback?.let {
             leScanner?.startScan(
-                null,
-                ScanSettings.Builder().setReportDelay(500).build(),
+//                null,
+//                ScanSettings.Builder().setReportDelay(500).build(),
                 it
             )
         }

@@ -28,6 +28,8 @@ import androidx.core.app.ActivityCompat
 import android.location.LocationManager
 import android.os.ParcelUuid
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.example.blexample.utils.Utils
 
 
@@ -105,15 +107,13 @@ class DeviceScanFragment : BaseFragment() {
         //TODO implement it
     }
 
-//    var listParcelUuids: List<ParcelUuid>? = arrayListOf()
-
     private fun observeEvents() {
         viewModel.leScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
-//                listParcelUuids = result.scanRecord?.serviceUuids
                 Log.i(TAG, ":>> onScanResult :: device=${result.device}")
-//                leDeviceListAdapter?.add(result.device)
+                leDeviceListAdapter?.add(result.device)
+                leDeviceListAdapter?.notifyDataSetChanged() // TODO make without notifyDataSetChanged !!
             }
             override fun onScanFailed(errorCode: Int) {
                 super.onScanFailed(errorCode)
@@ -122,8 +122,12 @@ class DeviceScanFragment : BaseFragment() {
             override fun onBatchScanResults(results: MutableList<ScanResult>?) {
                 super.onBatchScanResults(results)
                 println(":>> onBatchScanResults results.size=${results?.size}")
-                //TODO submitList not working
-                leDeviceListAdapter?.submitList(results?.map { scanResult -> scanResult.device })
+
+//                results?.map { scanResult -> scanResult.device }?.let {
+//                    leDeviceListAdapter?.addAll(it)
+//                }
+
+//                leDeviceListAdapter?.submitList(results?.map { scanResult -> scanResult.device })
             }
         }
         viewModel.scanningCalled.observe(viewLifecycleOwner, { scanning ->

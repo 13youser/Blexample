@@ -14,18 +14,29 @@ class LeDeviceListAdapter(
     private val onClick: (BluetoothDevice) -> Unit
 ) : ListAdapter<BluetoothDevice, LeDeviceListAdapter.DeviceViewHolder>(DeviceDiffCallback) {
 
-    /*private val listDevice = mutableListOf<BluetoothDevice>()
-
-    fun add(device: BluetoothDevice) {
-        if (!listDevice.contains(device)) {
-            listDevice.add(device)
-            submitList(listDevice)
-        }
-    }*/
-
     companion object {
         const val ITEM_LAYOUT = R.layout.item_list
     }
+
+    private val listDevice = mutableListOf<BluetoothDevice>()
+
+    var count = 0
+
+    fun add(device: BluetoothDevice) {
+        if (!listDevice.contains(device)) {
+            count++
+            println(":> qweqqqqqqqqqqqqqqq :: $count")
+            listDevice.add(device)
+            submitList(listDevice)
+        }
+    }
+
+    /*private val listDevice = mutableListOf<BluetoothDevice>()
+
+    fun addAll(list: List<BluetoothDevice>) {
+        listDevice.addAll(list)
+        submitList(listDevice)
+    }*/
 
     class DeviceViewHolder(
         itemView: View, val onClick: (BluetoothDevice) -> Unit
@@ -47,7 +58,7 @@ class LeDeviceListAdapter(
         /* Bind device name and address  */
         fun bind(device: BluetoothDevice) {
             this.device = device
-            textName.text = device.name
+            textName.text = device.name ?: "no_name"
             textAddress.text = device.address
         }
     }
