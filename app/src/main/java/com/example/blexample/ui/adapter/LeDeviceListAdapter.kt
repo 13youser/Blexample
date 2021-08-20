@@ -11,37 +11,44 @@ import com.example.blexample.R
 
 class LeDeviceListAdapter(
     private val context: Context,
+    private var listDevice: ArrayList<BluetoothDevice>,
+//    private var mapDevice: MutableMap<>
 ) : BaseAdapter() {
 
-    companion object {
-        const val ITEM_LAYOUT = R.layout.item_list
-    }
-
-    private val inflater =
-        context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-
-    private val listDevice = arrayListOf<BluetoothDevice>()
-
-    override fun getCount(): Int = 0
+    override fun getCount(): Int = listDevice.size
     override fun getItemId(position: Int): Long = position.toLong()
-    override fun getItem(position: Int): Any = listDevice[position]
+    override fun getItem(position: Int): BluetoothDevice = listDevice[position]
 
     override fun getView(
         position: Int,
         convertView: View?,
         parent: ViewGroup?
-    ): View {
-        val v = inflater.inflate(ITEM_LAYOUT, parent, false)
-        if (listDevice.isNotEmpty()) {
-            val device = listDevice[position]
-            v.findViewById<TextView>(R.id.textItemName).text = device.name
-            v.findViewById<TextView>(R.id.textItemAddress).text = device.address
-        } else println(":> ELSE DEVICE TO UI")
-        return v
+    ): View? {
+        val holder: ViewHolder
+
+        var cView = convertView
+        if (cView == null) {
+            cView = LayoutInflater.from(context).inflate(R.layout.item_list, parent, false)
+            holder = ViewHolder(cView)
+            cView?.tag = holder
+        } else {
+            holder = cView.tag as ViewHolder
+        }
+
+        val device = listDevice[position]
+        println(":> :::::: device --->  ${device.address}  ${device.name}")
+        holder.textName?.text = device.name ?: "<no_name>"
+        holder.textAddress?.text = device.address ?: "NULL"
+
+        return cView
+    }
+
+    inner class ViewHolder(view: View?) {
+        var textName = view?.findViewById<TextView>(R.id.textItemName)
+        var textAddress = view?.findViewById<TextView>(R.id.textItemAddress)
     }
 
     fun add(device: BluetoothDevice?) {
-        println(":> adding device=$device")
         device?.let {
             listDevice.add(it)
             notifyDataSetChanged()

@@ -2,6 +2,7 @@ package com.example.blexample.ui.screen
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
@@ -24,6 +25,7 @@ import android.os.Build
 
 import androidx.core.app.ActivityCompat
 import android.location.LocationManager
+import android.os.ParcelUuid
 import androidx.appcompat.app.AlertDialog
 import com.example.blexample.utils.Utils
 
@@ -43,8 +45,8 @@ class DeviceScanFragment : BaseFragment() {
     companion object {
         fun newInstance() = DeviceScanFragment()
 
-        const val REQUEST_PERMISSIONS_LOCATION = 100
-        const val REQUEST_PERMISSIONS_BLUETOOTH = 200
+        const val REQUEST_PERMISSIONS_GPS = 100
+        const val REQUEST_PERMISSIONS_BT = 200
         const val REQUEST_ENABLE_BT = 300
     }
 
@@ -73,7 +75,11 @@ class DeviceScanFragment : BaseFragment() {
     }
 
     private fun initView() {
-        leDeviceListAdapter = LeDeviceListAdapter(context = requireContext())
+        leDeviceListAdapter = LeDeviceListAdapter(
+            context = requireContext(),
+            listDevice = arrayListOf(),
+//            mapDevice = mutableMapOf()
+        )
         binding.listView.adapter = leDeviceListAdapter
 
         binding.buttonScanControl.setOnClickListener {
@@ -83,30 +89,37 @@ class DeviceScanFragment : BaseFragment() {
             if (!hasPerm) return@setOnClickListener
 
             when(viewModel.scanningCalled.value) {
-                true -> binding.buttonScanControl.text = getString(R.string.scan)
-                false -> binding.buttonScanControl.text = getString(R.string.stop)
+                true -> {
+                    binding.buttonScanControl.text = getString(R.string.scan)
+                }
+                false -> {
+                    binding.buttonScanControl.text = getString(R.string.stop)
+                    leDeviceListAdapter?.clear()
+                }
             }
             viewModel.switchScanLeDevice()
         }
     }
 
+    var listParcelUuids: List<ParcelUuid>? = arrayListOf()
+//    val parcelUuids: ArrayList<ParcelUuid> = mutableListOf()
+
     private fun observeEvents() {
         viewModel.leScanCallback = object : ScanCallback() {
-
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
 
-                Log.i(TAG, ":>> onScanResult " +
-                        ":: address=${result.device.address} name=${result.device.name}")
+//                listParcelUuids = result.scanRecord?.serviceUuids
+
+
+
 
                 leDeviceListAdapter?.add(device = result.device)
             }
             override fun onScanFailed(errorCode: Int) {
                 super.onScanFailed(errorCode)
-
                 Log.e(TAG, ":>> onScanFailed :: errorCode=$errorCode")
             }
-
             override fun onBatchScanResults(results: MutableList<ScanResult>?) {
                 super.onBatchScanResults(results)
                 println(":>> onBatchScanResults results.size=${results?.size}")
@@ -199,7 +212,7 @@ class DeviceScanFragment : BaseFragment() {
             ActivityCompat.requestPermissions(
                 requireActivity(),
                 listRequestPermission.toTypedArray(),
-                REQUEST_PERMISSIONS_LOCATION
+                REQUEST_PERMISSIONS_GPS
             )
             return false
         } else
@@ -215,7 +228,7 @@ class DeviceScanFragment : BaseFragment() {
             ActivityCompat.requestPermissions(
                 requireActivity(),
                 arrayOf(Manifest.permission.BLUETOOTH),
-                REQUEST_PERMISSIONS_BLUETOOTH
+                REQUEST_PERMISSIONS_BT
             )
             return false
         } else
