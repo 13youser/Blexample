@@ -3,6 +3,7 @@ package com.example.blexample.ui.viewmodel
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanSettings
 import android.os.Handler
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -22,7 +23,11 @@ class DeviceScanViewModel: BaseViewModel() {
 
     private val callableStartScanning = Callable<Unit> {
         leScanCallback?.let {
-            leScanner?.startScan(it)
+            leScanner?.startScan(
+                null,
+                ScanSettings.Builder().setReportDelay(500).build(),
+                it
+            )
         }
     }
     private val callableStopScanning = Callable<Unit> {

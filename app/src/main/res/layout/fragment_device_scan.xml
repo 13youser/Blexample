@@ -8,19 +8,18 @@
     tools:context=".ui.screen.DeviceScanFragment">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-<!--        <ScrollView-->
-<!--            android:layout_width=""-->
-<!--            android:layout_height=""-->
-        <ListView
-            android:id="@+id/listView"
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/listRecycler"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:padding="@dimen/indent_middle"
             tools:listitem="@layout/item_list" />
+
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

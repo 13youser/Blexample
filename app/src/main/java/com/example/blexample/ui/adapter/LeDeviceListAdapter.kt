@@ -1,63 +1,76 @@
 package com.example.blexample.ui.adapter
 
 import android.bluetooth.BluetoothDevice
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.example.blexample.R
 
 class LeDeviceListAdapter(
-    private val context: Context,
-    private var listDevice: ArrayList<BluetoothDevice>,
-//    private var mapDevice: MutableMap<>
-) : BaseAdapter() {
+    private val onClick: (BluetoothDevice) -> Unit
+) : ListAdapter<BluetoothDevice, LeDeviceListAdapter.DeviceViewHolder>(DeviceDiffCallback) {
 
-    override fun getCount(): Int = listDevice.size
-    override fun getItemId(position: Int): Long = position.toLong()
-    override fun getItem(position: Int): BluetoothDevice = listDevice[position]
+    /*private val listDevice = mutableListOf<BluetoothDevice>()
 
-    override fun getView(
-        position: Int,
-        convertView: View?,
-        parent: ViewGroup?
-    ): View? {
-        val holder: ViewHolder
+    fun add(device: BluetoothDevice) {
+        if (!listDevice.contains(device)) {
+            listDevice.add(device)
+            submitList(listDevice)
+        }
+    }*/
 
-        var cView = convertView
-        if (cView == null) {
-            cView = LayoutInflater.from(context).inflate(R.layout.item_list, parent, false)
-            holder = ViewHolder(cView)
-            cView?.tag = holder
-        } else {
-            holder = cView.tag as ViewHolder
+    companion object {
+        const val ITEM_LAYOUT = R.layout.item_list
+    }
+
+    class DeviceViewHolder(
+        itemView: View, val onClick: (BluetoothDevice) -> Unit
+    ) : RecyclerView.ViewHolder(itemView) {
+
+        private var textName = itemView.findViewById<TextView>(R.id.textItemName)
+        private var textAddress = itemView.findViewById<TextView>(R.id.textItemAddress)
+
+        private var device: BluetoothDevice? = null
+
+        init {
+            itemView.setOnClickListener {
+                device?.let {
+                    onClick(it)
+                }
+            }
         }
 
-        val device = listDevice[position]
-        println(":> :::::: device --->  ${device.address}  ${device.name}")
-        holder.textName?.text = device.name ?: "<no_name>"
-        holder.textAddress?.text = device.address ?: "NULL"
-
-        return cView
-    }
-
-    inner class ViewHolder(view: View?) {
-        var textName = view?.findViewById<TextView>(R.id.textItemName)
-        var textAddress = view?.findViewById<TextView>(R.id.textItemAddress)
-    }
-
-    fun add(device: BluetoothDevice?) {
-        device?.let {
-            listDevice.add(it)
-            notifyDataSetChanged()
+        /* Bind device name and address  */
+        fun bind(device: BluetoothDevice) {
+            this.device = device
+            textName.text = device.name
+            textAddress.text = device.address
         }
     }
 
-    fun clear() {
-        listDevice.clear()
-        notifyDataSetChanged()
-    }
+    /* Creates and inflates view and return DeviceViewHolder. */
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = DeviceViewHolder(
+        itemView = LayoutInflater.from(parent.context)
+            .inflate(ITEM_LAYOUT, parent, false),
+        onClick = onClick
+    )
 
+    /* Gets current device and uses it to bind view. */
+    override fun onBindViewHolder(holder: DeviceViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
+}
+
+object DeviceDiffCallback : DiffUtil.ItemCallback<BluetoothDevice>() {
+    override fun areItemsTheSame(oldItem: BluetoothDevice, newItem: BluetoothDevice) =
+        oldItem == newItem
+    override fun areContentsTheSame(oldItem: BluetoothDevice, newItem: BluetoothDevice) =
+        oldItem.uuids
+            .contentEquals(
+                newItem.uuids
+            )
 }

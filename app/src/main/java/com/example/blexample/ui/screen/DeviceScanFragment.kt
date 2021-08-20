@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -71,21 +72,20 @@ class DeviceScanFragment : BaseFragment() {
         observeEvents()
 
         val hasPerm = requestRequirements()
-        println(":> hasPerm=$hasPerm :: init")
+        println(":> hasPerm=$hasPerm     :: on init")
     }
 
     private fun initView() {
+
         leDeviceListAdapter = LeDeviceListAdapter(
-            context = requireContext(),
-            listDevice = arrayListOf(),
-//            mapDevice = mutableMapOf()
+            onClick = { device -> adapterOnClick(bluetoothDevice = device) }
         )
-        binding.listView.adapter = leDeviceListAdapter
+
+        binding.listRecycler.adapter = leDeviceListAdapter
 
         binding.buttonScanControl.setOnClickListener {
-
             val hasPerm = requestRequirements()
-            println(":> hasPerm=$hasPerm :: on click")
+            println(":> hasPerm=$hasPerm     :: on click")
             if (!hasPerm) return@setOnClickListener
 
             when(viewModel.scanningCalled.value) {
@@ -94,27 +94,26 @@ class DeviceScanFragment : BaseFragment() {
                 }
                 false -> {
                     binding.buttonScanControl.text = getString(R.string.stop)
-                    leDeviceListAdapter?.clear()
+//                    leDeviceListAdapter?.clear() TODO clear (or hide?)
                 }
             }
             viewModel.switchScanLeDevice()
         }
     }
 
-    var listParcelUuids: List<ParcelUuid>? = arrayListOf()
-//    val parcelUuids: ArrayList<ParcelUuid> = mutableListOf()
+    private fun adapterOnClick(bluetoothDevice: BluetoothDevice) {
+        //TODO implement it
+    }
+
+//    var listParcelUuids: List<ParcelUuid>? = arrayListOf()
 
     private fun observeEvents() {
         viewModel.leScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
-
 //                listParcelUuids = result.scanRecord?.serviceUuids
-
-
-
-
-                leDeviceListAdapter?.add(device = result.device)
+                Log.i(TAG, ":>> onScanResult :: device=${result.device}")
+//                leDeviceListAdapter?.add(result.device)
             }
             override fun onScanFailed(errorCode: Int) {
                 super.onScanFailed(errorCode)
@@ -123,6 +122,8 @@ class DeviceScanFragment : BaseFragment() {
             override fun onBatchScanResults(results: MutableList<ScanResult>?) {
                 super.onBatchScanResults(results)
                 println(":>> onBatchScanResults results.size=${results?.size}")
+                //TODO submitList not working
+                leDeviceListAdapter?.submitList(results?.map { scanResult -> scanResult.device })
             }
         }
         viewModel.scanningCalled.observe(viewLifecycleOwner, { scanning ->
