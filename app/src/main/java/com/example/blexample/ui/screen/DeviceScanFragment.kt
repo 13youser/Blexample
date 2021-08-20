@@ -111,9 +111,8 @@ class DeviceScanFragment : BaseFragment() {
         viewModel.leScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
-                Log.i(TAG, ":>> onScanResult :: device=${result.device}")
-                leDeviceListAdapter?.add(result.device)
-                leDeviceListAdapter?.notifyDataSetChanged() // TODO make without notifyDataSetChanged !!
+//                Log.i(TAG, ":>> onScanResult :: device=${result.device}")
+                leDeviceListAdapter?.add(device = result.device)
             }
             override fun onScanFailed(errorCode: Int) {
                 super.onScanFailed(errorCode)
@@ -131,6 +130,7 @@ class DeviceScanFragment : BaseFragment() {
             }
         }
         viewModel.scanningCalled.observe(viewLifecycleOwner, { scanning ->
+            if (scanning) leDeviceListAdapter?.clearList()
             view?.post {
                 binding.buttonScanControl.text = getString(
                     if (scanning)

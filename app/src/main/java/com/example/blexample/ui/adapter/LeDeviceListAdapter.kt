@@ -20,14 +20,12 @@ class LeDeviceListAdapter(
 
     private val listDevice = mutableListOf<BluetoothDevice>()
 
-    var count = 0
-
     fun add(device: BluetoothDevice) {
         if (!listDevice.contains(device)) {
-            count++
-            println(":> qweqqqqqqqqqqqqqqq :: $count")
+            println(":>  device  ::  ${device.address}  ${device.name}")
             listDevice.add(device)
             submitList(listDevice)
+//            notifyDataSetChanged() // TODO make without notifyDataSetChanged !!
         }
     }
 
@@ -36,7 +34,15 @@ class LeDeviceListAdapter(
     fun addAll(list: List<BluetoothDevice>) {
         listDevice.addAll(list)
         submitList(listDevice)
+        println(":>  devices adding  ::  size ${list.size}")
+        notifyDataSetChanged() // TODO make without notifyDataSetChanged !!
     }*/
+
+    fun clearList() { //TODO wrong
+//        listDevice.clear()
+//        submitList(null)
+//        notifyDataSetChanged() // TODO make without notifyDataSetChanged !!
+    }
 
     class DeviceViewHolder(
         itemView: View, val onClick: (BluetoothDevice) -> Unit
