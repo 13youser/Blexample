@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
-import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -26,10 +25,7 @@ import android.os.Build
 
 import androidx.core.app.ActivityCompat
 import android.location.LocationManager
-import android.os.ParcelUuid
 import androidx.appcompat.app.AlertDialog
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.example.blexample.utils.Utils
 
 
@@ -48,9 +44,9 @@ class DeviceScanFragment : BaseFragment() {
     companion object {
         fun newInstance() = DeviceScanFragment()
 
-        const val REQUEST_PERMISSIONS_GPS = 100
+        const val REQUEST_ENABLE_BT = 100
         const val REQUEST_PERMISSIONS_BT = 200
-        const val REQUEST_ENABLE_BT = 300
+        const val REQUEST_PERMISSIONS_GPS = 300
     }
 
     override fun onCreateView(
@@ -69,12 +65,9 @@ class DeviceScanFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         initView()
         observeEvents()
-
-        val hasPerm = requestRequirements()
-        println(":> hasPerm=$hasPerm     :: on init")
+        requestRequirements()
     }
 
     private fun initView() {
@@ -87,17 +80,11 @@ class DeviceScanFragment : BaseFragment() {
 
         binding.buttonScanControl.setOnClickListener {
             val hasPerm = requestRequirements()
-            println(":> hasPerm=$hasPerm     :: on click")
             if (!hasPerm) return@setOnClickListener
 
             when(viewModel.scanningCalled.value) {
-                true -> {
-                    binding.buttonScanControl.text = getString(R.string.scan)
-                }
-                false -> {
-                    binding.buttonScanControl.text = getString(R.string.stop)
-//                    leDeviceListAdapter?.clear() TODO clear (or hide?)
-                }
+                true -> binding.buttonScanControl.text = getString(R.string.scan)
+                false -> binding.buttonScanControl.text = getString(R.string.stop)
             }
             viewModel.switchScanLeDevice()
         }
@@ -111,26 +98,11 @@ class DeviceScanFragment : BaseFragment() {
         viewModel.leScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
-//                Log.i(TAG, ":>> onScanResult :: device=${result.device}")
                 leDeviceListAdapter?.add(device = result.device)
-            }
-            override fun onScanFailed(errorCode: Int) {
-                super.onScanFailed(errorCode)
-                Log.e(TAG, ":>> onScanFailed :: errorCode=$errorCode")
-            }
-            override fun onBatchScanResults(results: MutableList<ScanResult>?) {
-                super.onBatchScanResults(results)
-                println(":>> onBatchScanResults results.size=${results?.size}")
-
-//                results?.map { scanResult -> scanResult.device }?.let {
-//                    leDeviceListAdapter?.addAll(it)
-//                }
-
-//                leDeviceListAdapter?.submitList(results?.map { scanResult -> scanResult.device })
             }
         }
         viewModel.scanningCalled.observe(viewLifecycleOwner, { scanning ->
-            if (scanning) leDeviceListAdapter?.clearList()
+            if (scanning) leDeviceListAdapter?.clear()
             view?.post {
                 binding.buttonScanControl.text = getString(
                     if (scanning)
@@ -149,9 +121,7 @@ class DeviceScanFragment : BaseFragment() {
             checkBluetoothPermissions() and requestBluetoothEnable()
 
     private fun requestBluetoothEnable():Boolean {
-        viewModel.bluetoothAdapter?.let {
-
-            val enabled = it.isEnabled
+        viewModel.isBluetoothEnabled()?.let { enabled ->
             if (!enabled)
                 startActivityForResult(
                     Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),
