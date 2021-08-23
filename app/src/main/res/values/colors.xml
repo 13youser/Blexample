@@ -12,6 +12,7 @@
     <color name="black">#FF000000</color>
     <color name="black_light">#222222</color>
     <color name="grey">#AEAEAE</color>
+    <color name="grey_transparent">#74AEAEAE</color>
     <color name="grey_light">#F3F3F3</color>
     <color name="white">#FFFFFFFF</color>
     <color name="red_error_danger">#DF0000</color>
