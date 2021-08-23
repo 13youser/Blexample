@@ -22,7 +22,6 @@ class LeDeviceListAdapter(
 
     fun add(device: BluetoothDevice) {
         if (!listDevice.contains(device)) {
-            listDevice
             listDevice.add(device)
             submitList(listDevice)
             notifyDataSetChanged()

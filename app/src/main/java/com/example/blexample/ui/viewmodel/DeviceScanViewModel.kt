@@ -1,9 +1,9 @@
 package com.example.blexample.ui.viewmodel
 
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanSettings
 import android.os.Handler
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -18,6 +18,9 @@ class DeviceScanViewModel: BaseViewModel() {
 
     private companion object {
         const val SCAN_PERIOD: Long = 13000
+    }
+    interface LeCallbacks {
+        fun connect(device: BluetoothDevice)
     }
     private val callableStartScanning = Callable<Unit> {
         leScanCallback?.let {
@@ -38,6 +41,7 @@ class DeviceScanViewModel: BaseViewModel() {
     val scanningCalled: LiveData<Boolean> get() = _scanningCalled
 
     var leScanCallback: ScanCallback? = null
+    var leCallbacks: LeCallbacks? = null
 
     private fun callStartScanLe() {
         _scanningCalled.value = true
@@ -71,7 +75,7 @@ class DeviceScanViewModel: BaseViewModel() {
     }
 
     /**
-     * Check Bluetooth
+     * Check Bluetooth enabled
      * @return true if enabled, null if Bluetooth is not supported on this hardware platform
      */
     fun isBluetoothEnabled() = bluetoothAdapter?.isEnabled
@@ -94,5 +98,12 @@ class DeviceScanViewModel: BaseViewModel() {
      */
     fun stopScanLeDevice() {
         callStopScanLe()
+    }
+
+    /**
+     * Connect to BLE device
+     */
+    fun tryConnect(device: BluetoothDevice) {
+        leCallbacks?.connect(device)
     }
 }

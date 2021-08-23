@@ -9,7 +9,9 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <uses-feature android:name="android.hardware.location.gps" />
-    <uses-feature android:name="android.hardware.bluetooth" android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="true" />
 
     <application
         android:name=".App"
@@ -19,6 +21,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Blexample">
+
+        <service
+            android:name=".service.BluetoothLeService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+
         <activity
             android:name=".ui.MainActivity"
             android:exported="true">
@@ -28,6 +37,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

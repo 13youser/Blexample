@@ -2,17 +2,14 @@ package com.example.blexample.ui.screen
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import com.example.blexample.R
 import com.example.blexample.databinding.FragmentDeviceScanBinding
 import com.example.blexample.ui.adapter.LeDeviceListAdapter
@@ -34,13 +31,6 @@ import com.example.blexample.utils.Utils
  */
 class DeviceScanFragment : BaseFragment() {
 
-    private var _binding: FragmentDeviceScanBinding? = null
-    private val binding get() = _binding!!
-
-    private val viewModel by sharedViewModel<DeviceScanViewModel>()
-
-    private var leDeviceListAdapter: LeDeviceListAdapter? = null
-
     companion object {
         fun newInstance() = DeviceScanFragment()
 
@@ -48,6 +38,12 @@ class DeviceScanFragment : BaseFragment() {
         const val REQUEST_PERMISSIONS_BT = 200
         const val REQUEST_PERMISSIONS_GPS = 300
     }
+
+    private var _binding: FragmentDeviceScanBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel by sharedViewModel<DeviceScanViewModel>()
+    private var leDeviceListAdapter: LeDeviceListAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -73,7 +69,7 @@ class DeviceScanFragment : BaseFragment() {
     private fun initView() {
 
         leDeviceListAdapter = LeDeviceListAdapter(
-            onClick = { device -> adapterOnClick(bluetoothDevice = device) }
+            onClick = { d -> viewModel.tryConnect(device = d) }
         )
 
         binding.listRecycler.adapter = leDeviceListAdapter
@@ -88,10 +84,6 @@ class DeviceScanFragment : BaseFragment() {
             }
             viewModel.switchScanLeDevice()
         }
-    }
-
-    private fun adapterOnClick(bluetoothDevice: BluetoothDevice) {
-        //TODO implement it
     }
 
     private fun observeEvents() {
@@ -139,8 +131,8 @@ class DeviceScanFragment : BaseFragment() {
             requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val mIsGPSEnabled =
             mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        /*val mIsNetworkEnabled =
-            mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)*/
+        val mIsNetworkEnabled =
+            mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
         val isGeoEnabled = mIsGPSEnabled //&& mIsNetworkEnabled
         if (!isGeoEnabled)
@@ -211,25 +203,22 @@ class DeviceScanFragment : BaseFragment() {
             return true
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when(requestCode) {
             REQUEST_ENABLE_BT -> {
                 when(resultCode) {
                     AppCompatActivity.RESULT_OK -> {
-                        Log.d(TAG, ":> Enabling Bluetooth succeeds")
+                        Log.d(TAG, "BLT RESULT_OK :: Enabling Bluetooth succeeds")
                     }
                     AppCompatActivity.RESULT_CANCELED -> {
-                        Log.d(TAG, ":> Bluetooth was not enabled due to an error " +
-                                "(or the user responded \"Deny\")")
-//                        requestBluetoothEnable()
+                        Log.e(TAG, "BLT RESULT_CANCELED Bluetooth was not enabled" +
+                                "due to an error (or the user responded \"Deny\")")
                     }
                 }
             }
-            else -> {
-                Log.e(TAG, ":> Unknown request code")
-            }
+            else -> Log.e(TAG, ":> Unknown request code")
         }
         super.onActivityResult(requestCode, resultCode, data)
-    }
+    }*/
 
 }

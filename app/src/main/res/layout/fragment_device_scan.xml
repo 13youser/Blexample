@@ -49,6 +49,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/scan"
+            tools:text="@string/stop"
             android:drawableEnd="@null"
             />
         <ProgressBar

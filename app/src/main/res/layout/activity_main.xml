@@ -33,5 +33,20 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph_main" />
 
+    <View
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"
+        />
+
+    <ProgressBar
+        android:id="@+id/progressBarrr"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        tools:visibility="visible"
+        android:visibility="invisible"
+        />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

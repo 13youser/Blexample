@@ -2,37 +2,56 @@ package com.example.blexample.ui
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.example.blexample.R
 import com.example.blexample.databinding.ActivityMainBinding
+import com.example.blexample.service.BluetoothLeService
 import com.example.blexample.ui.viewmodel.DeviceScanViewModel
+import com.incotex.mercurycashbox.ui.base.invisible
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        const val TAG = "MainActivity"
+    }
+
     private lateinit var binding: ActivityMainBinding
+
     private val viewModelScan by viewModel<DeviceScanViewModel>()
+    private var bluetoothService : BluetoothLeService? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            initBluetoothReceiver()
-        }
+        if (savedInstanceState == null)
+            initBroadcastReceivers()
+
         initToolbar()
+        initServices()
+        observeEvents()
     }
 
-    private fun initBluetoothReceiver() {
+    override fun onDestroy() {
+        try {
+            unregisterReceiver(bluetoothReceiver)
+            unregisterReceiver(gattUpdateReceiver)
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+        }
+        super.onDestroy()
+    }
+
+    private fun initBroadcastReceivers() {
         val filter = IntentFilter()
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
@@ -44,6 +63,11 @@ class MainActivity : AppCompatActivity() {
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
         filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
         registerReceiver(bluetoothReceiver, filter)
+
+        val filter2 = IntentFilter()
+        filter2.addAction(BluetoothLeService.ACTION_GATT_CONNECTED)
+        filter2.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED)
+        registerReceiver(gattUpdateReceiver, filter2)
     }
 
     private fun initToolbar() {
@@ -54,13 +78,58 @@ class MainActivity : AppCompatActivity() {
         binding.toolbar.setupWithNavController(navController, appBarConfiguration)
     }
 
-    override fun onDestroy() {
-        try {
-            unregisterReceiver(bluetoothReceiver)
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
+    private fun initServices() {
+        val gattServiceIntent = Intent(this, BluetoothLeService::class.java)
+        bindService(gattServiceIntent, serviceConnection, BIND_AUTO_CREATE)
+    }
+
+    private val serviceConnection: ServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            bluetoothService = (service as BluetoothLeService.LocalBinder).getService()
+            bluetoothService?.initialize()
         }
-        super.onDestroy()
+        override fun onServiceDisconnected(name: ComponentName?) {
+            bluetoothService = null
+        }
+    }
+
+    private fun observeEvents() {
+        viewModelScan.leCallbacks = object : DeviceScanViewModel.LeCallbacks {
+            override fun connect(device: BluetoothDevice) {
+                showProgress()
+                val succ = bluetoothService?.connect(device.address)
+            }
+        }
+    }
+
+    private fun showProgress() {
+        binding.progressBarrr.invisible(false)
+        binding.overlay.invisible(false)
+    }
+
+    private fun hideProgress() {
+        binding.progressBarrr.invisible(true)
+        binding.overlay.invisible(true)
+    }
+
+    private val gattUpdateReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when(intent?.action) {
+                BluetoothLeService.ACTION_GATT_CONNECTED -> {
+                    Log.i(TAG, "BLT:: ACTION_GATT_CONNECTED")
+                    hideProgress()
+                }
+                BluetoothLeService.ACTION_GATT_DISCONNECTED -> {
+                    Log.i(TAG, "BLT:: ACTION_GATT_DISCONNECTED")
+                    hideProgress()
+                }
+                else -> {
+                    Log.e(TAG, "BLT:: ACTION GATT ERROR")
+                    hideProgress()
+                }
+            }
+        }
     }
 
     private val bluetoothReceiver: BroadcastReceiver = object : BroadcastReceiver() {
