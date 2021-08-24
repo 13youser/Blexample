@@ -45,7 +45,7 @@ class MainFragment : BaseFragment() {
     }
 
     private fun initView() {
-//        updateUI(viewModel.currentDeviceData)
+        /*updateUI(viewModel.currentDeviceData)*/
 
         with(binding) {
             buttonForget.setOnClickListener {

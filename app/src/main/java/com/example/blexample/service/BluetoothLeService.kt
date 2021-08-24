@@ -20,6 +20,8 @@ class BluetoothLeService : Service() {
             "com.example.blexample.bluetooth.le.ACTION_GATT_CONNECTED"
         const val ACTION_GATT_DISCONNECTED =
             "com.example.blexample.bluetooth.le.ACTION_GATT_DISCONNECTED"
+
+        const val EXTRA_DEVICE_CONNECTED = "EXTRA_DEVICE_CONNECTED"
     }
 
     private val binder = LocalBinder()
@@ -65,14 +67,16 @@ class BluetoothLeService : Service() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             when(newState) {
                 BluetoothProfile.STATE_CONNECTED ->
-                    broadcast(action = ACTION_GATT_CONNECTED)
+                    broadcast(action = ACTION_GATT_CONNECTED, device = connectedDevice)
                 BluetoothProfile.STATE_DISCONNECTED ->
                     broadcast(action = ACTION_GATT_DISCONNECTED)
             }
         }
     }
 
-    private fun broadcast(action: String) {
-        sendBroadcast(Intent(action))
+    private fun broadcast(action: String, device: BluetoothDevice? = null) {
+        val intent = Intent(action)
+        device?.let { intent.putExtra(EXTRA_DEVICE_CONNECTED, it) }
+        sendBroadcast(intent)
     }
 }

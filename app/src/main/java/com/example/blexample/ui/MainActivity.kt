@@ -11,6 +11,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.example.blexample.R
+import com.example.blexample.data.DeviceData
 import com.example.blexample.databinding.ActivityMainBinding
 import com.example.blexample.service.BluetoothLeService
 import com.example.blexample.ui.viewmodel.DeviceViewModel
@@ -120,14 +121,22 @@ class MainActivity : AppCompatActivity() {
             when(intent?.action) {
                 BluetoothLeService.ACTION_GATT_CONNECTED -> {
                     Log.i(TAG, "BLT:: ACTION_GATT_CONNECTED")
+
+                    intent.getParcelableExtra<BluetoothDevice>(
+                        BluetoothLeService.EXTRA_DEVICE_CONNECTED
+                    )?.let {
+                        println(":> on connect UUID=${it.uuids}")
+                        viewModel.currentDeviceData = DeviceData(it.name, it.address, it.uuids)
+                    }
+
                     hideProgress()
-                    Utils.showOkDialog(this@MainActivity, "", "Successfully connected")
+                    Utils.showOkDialog(this@MainActivity, "", "GATT connected")
                 }
                 BluetoothLeService.ACTION_GATT_DISCONNECTED -> {
                     Log.i(TAG, "BLT:: ACTION_GATT_DISCONNECTED")
                     hideProgress()
                     viewModel.currentDeviceData = null
-                    Utils.showOkDialog(this@MainActivity, "", "Fail to connect")
+                    Utils.showOkDialog(this@MainActivity, "", "GATT disconnected")
                 }
                 else -> {
                     Log.e(TAG, "BLT:: ACTION GATT ERROR")

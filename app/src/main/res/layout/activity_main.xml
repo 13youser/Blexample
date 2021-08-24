@@ -39,7 +39,8 @@
         android:layout_height="match_parent"
         android:visibility="gone"
         android:background="@color/grey_transparent"
-        />
+        android:clickable="true"
+        android:focusable="true" />
 
     <ProgressBar
         android:id="@+id/progressBarrr"
@@ -48,6 +49,7 @@
         android:layout_gravity="center"
         tools:visibility="visible"
         android:visibility="invisible"
+        android:layout_marginTop="400dp"
         />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
