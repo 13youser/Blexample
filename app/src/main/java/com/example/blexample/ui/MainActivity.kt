@@ -13,7 +13,9 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.blexample.R
 import com.example.blexample.databinding.ActivityMainBinding
 import com.example.blexample.service.BluetoothLeService
-import com.example.blexample.ui.viewmodel.DeviceScanViewModel
+import com.example.blexample.ui.viewmodel.DeviceViewModel
+import com.example.blexample.utils.Utils
+import com.incotex.mercurycashbox.ui.base.gone
 import com.incotex.mercurycashbox.ui.base.invisible
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -25,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private val viewModelScan by viewModel<DeviceScanViewModel>()
+    private val viewModel by viewModel<DeviceViewModel>()
     private var bluetoothService : BluetoothLeService? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,7 +96,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observeEvents() {
-        viewModelScan.leCallbacks = object : DeviceScanViewModel.LeCallbacks {
+        viewModel.leCallbacks = object : DeviceViewModel.LeCallbacks {
             override fun connect(device: BluetoothDevice) {
                 showProgress()
                 val succ = bluetoothService?.connect(device.address)
@@ -104,12 +106,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showProgress() {
         binding.progressBarrr.invisible(false)
-        binding.overlay.invisible(false)
+        binding.overlay.gone(false)
     }
 
     private fun hideProgress() {
         binding.progressBarrr.invisible(true)
-        binding.overlay.invisible(true)
+        binding.overlay.gone(true)
     }
 
     private val gattUpdateReceiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -119,14 +121,18 @@ class MainActivity : AppCompatActivity() {
                 BluetoothLeService.ACTION_GATT_CONNECTED -> {
                     Log.i(TAG, "BLT:: ACTION_GATT_CONNECTED")
                     hideProgress()
+                    Utils.showOkDialog(this@MainActivity, "", "Successfully connected")
                 }
                 BluetoothLeService.ACTION_GATT_DISCONNECTED -> {
                     Log.i(TAG, "BLT:: ACTION_GATT_DISCONNECTED")
                     hideProgress()
+                    viewModel.currentDeviceData = null
+                    Utils.showOkDialog(this@MainActivity, "", "Fail to connect")
                 }
                 else -> {
                     Log.e(TAG, "BLT:: ACTION GATT ERROR")
                     hideProgress()
+                    Utils.showOkDialog(this@MainActivity, "", "Some went wrong. Try again")
                 }
             }
         }

@@ -1,12 +1,15 @@
 package com.example.blexample.di
 
-import com.example.blexample.ui.viewmodel.DeviceScanViewModel
+import com.example.blexample.data.Preferences
+import com.example.blexample.ui.viewmodel.DeviceViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 /** Koin app module */
 val appModule = module {
 
-    viewModel { DeviceScanViewModel() }
+    single { Preferences.getInstance(get()) }
+
+    viewModel { DeviceViewModel(get()) }
 
 }

@@ -14,7 +14,7 @@ import com.example.blexample.R
 import com.example.blexample.databinding.FragmentDeviceScanBinding
 import com.example.blexample.ui.adapter.LeDeviceListAdapter
 import com.example.blexample.ui.base.BaseFragment
-import com.example.blexample.ui.viewmodel.DeviceScanViewModel
+import com.example.blexample.ui.viewmodel.DeviceViewModel
 import com.incotex.mercurycashbox.ui.base.invisible
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import android.content.pm.PackageManager
@@ -42,7 +42,7 @@ class DeviceScanFragment : BaseFragment() {
     private var _binding: FragmentDeviceScanBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel by sharedViewModel<DeviceScanViewModel>()
+    private val viewModel by sharedViewModel<DeviceViewModel>()
     private var leDeviceListAdapter: LeDeviceListAdapter? = null
 
     override fun onCreateView(
@@ -64,12 +64,17 @@ class DeviceScanFragment : BaseFragment() {
         initView()
         observeEvents()
         requestRequirements()
+
+        viewModel.switchScanLeDevice()
     }
 
     private fun initView() {
 
         leDeviceListAdapter = LeDeviceListAdapter(
-            onClick = { d -> viewModel.tryConnect(device = d) }
+            onClick = { d ->
+                viewModel.tryConnect(device = d)
+                navigateBack()
+            }
         )
 
         binding.listRecycler.adapter = leDeviceListAdapter

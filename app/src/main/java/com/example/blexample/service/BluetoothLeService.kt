@@ -72,7 +72,7 @@ class BluetoothLeService : Service() {
         }
     }
 
-    private fun broadcast(action: String) { //todo: onreceive in proadcast (see activity)
+    private fun broadcast(action: String) {
         sendBroadcast(Intent(action))
     }
 }

@@ -16,5 +16,6 @@
     <dimen name="indent_large">16dp</dimen>
     <dimen name="indent_xlarge">32dp</dimen>
     <dimen name="indent_screen">@dimen/indent_middle</dimen>
+    <dimen name="height_panel_manage">100dp</dimen>
 
 </resources>

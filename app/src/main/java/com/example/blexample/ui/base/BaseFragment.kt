@@ -20,6 +20,15 @@ abstract class BaseFragment : Fragment() {
     }
 
     /**
+     * Navigate pop back stack
+     * */
+    protected fun Fragment.navigateBack() {
+        this.findNavController()//.getBackStackEntry()
+            .popBackStack()
+            .also { println("nav:> popBackStack from $TAG") }
+    }
+
+    /**
      * Navigate by ID
      * */
     protected fun View.navigateAction(id: Int) {

@@ -8,13 +8,17 @@ import android.os.Handler
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.blexample.data.DeviceData
+import com.example.blexample.data.Preferences
 import com.example.blexample.ui.base.BaseViewModel
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.Callable
 
-class DeviceScanViewModel: BaseViewModel() {
+class DeviceViewModel(
+    private val prefs: Preferences
+) : BaseViewModel() {
 
     private companion object {
         const val SCAN_PERIOD: Long = 13000
@@ -39,6 +43,23 @@ class DeviceScanViewModel: BaseViewModel() {
 
     private val _scanningCalled = MutableLiveData<Boolean>()
     val scanningCalled: LiveData<Boolean> get() = _scanningCalled
+
+    private val _currentDeviceLiveData = MutableLiveData<DeviceData?>()
+    val currentDeviceLiveData: LiveData<DeviceData?> get() = _currentDeviceLiveData
+
+    var currentDeviceData: DeviceData? = null
+        get() = _currentDeviceLiveData.value
+            ?: prefs.deviceData
+                .also { _currentDeviceLiveData.value = it }
+        set(value) {
+            field = value
+            prefs.deviceData = value
+            _currentDeviceLiveData.value = value
+        }
+
+    init {
+        currentDeviceData = prefs.deviceData
+    }
 
     var leScanCallback: ScanCallback? = null
     var leCallbacks: LeCallbacks? = null
@@ -104,6 +125,8 @@ class DeviceScanViewModel: BaseViewModel() {
      * Connect to BLE device
      */
     fun tryConnect(device: BluetoothDevice) {
+        stopScanLeDevice()
+        currentDeviceData = DeviceData(device.name, device.address, device.uuids)
         leCallbacks?.connect(device)
     }
 }
