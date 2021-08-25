@@ -1,13 +1,13 @@
 package com.example.blexample.data
 
-import android.os.ParcelUuid
+//import android.os.ParcelUuid
 
 data class DeviceData(
     val name: String? = "no_name",
     val address: String? = "",
-    val uuids: Array<ParcelUuid>?
+//    val uuids: Array<ParcelUuid>?
 ) {
-    override fun equals(other: Any?): Boolean {
+    /*override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
@@ -25,5 +25,5 @@ data class DeviceData(
         result = 31 * result + address.hashCode()
         result = 31 * result + uuids.contentHashCode()
         return result
-    }
+    }*/
 }

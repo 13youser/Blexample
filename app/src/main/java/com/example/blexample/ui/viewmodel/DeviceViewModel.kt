@@ -126,7 +126,7 @@ class DeviceViewModel(
      */
     fun tryConnect(device: BluetoothDevice) {
         stopScanLeDevice()
-        currentDeviceData = DeviceData(device.name, device.address, device.uuids)
+        currentDeviceData = DeviceData(device.name, device.address)
         leCallbacks?.connect(device)
     }
 }

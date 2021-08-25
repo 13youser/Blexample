@@ -2,6 +2,8 @@ package com.example.blexample.ui
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattService
 import android.content.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -15,6 +17,7 @@ import com.example.blexample.data.DeviceData
 import com.example.blexample.databinding.ActivityMainBinding
 import com.example.blexample.service.BluetoothLeService
 import com.example.blexample.ui.viewmodel.DeviceViewModel
+import com.example.blexample.utils.SampleGattAttributes
 import com.example.blexample.utils.Utils
 import com.incotex.mercurycashbox.ui.base.gone
 import com.incotex.mercurycashbox.ui.base.invisible
@@ -24,12 +27,16 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val TAG = "MainActivity"
+
+        const val LIST_NAME = "NAME"
+        const val LIST_UUID = "uuid"
     }
 
     private lateinit var binding: ActivityMainBinding
 
     private val viewModel by viewModel<DeviceViewModel>()
     private var bluetoothService : BluetoothLeService? = null
+    private var mGattCharacteristics = mutableListOf<ArrayList<BluetoothGattCharacteristic>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         val filter2 = IntentFilter()
         filter2.addAction(BluetoothLeService.ACTION_GATT_CONNECTED)
         filter2.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED)
+        filter2.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED)
         registerReceiver(gattUpdateReceiver, filter2)
     }
 
@@ -126,7 +134,7 @@ class MainActivity : AppCompatActivity() {
                         BluetoothLeService.EXTRA_DEVICE_CONNECTED
                     )?.let {
                         println(":> on connect UUID=${it.uuids}")
-                        viewModel.currentDeviceData = DeviceData(it.name, it.address, it.uuids)
+                        viewModel.currentDeviceData = DeviceData(it.name, it.address)
                     }
 
                     hideProgress()
@@ -138,12 +146,75 @@ class MainActivity : AppCompatActivity() {
                     viewModel.currentDeviceData = null
                     Utils.showOkDialog(this@MainActivity, "", "GATT disconnected")
                 }
+                BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED -> {
+                    Log.i(TAG, "BLT:: ACTION_GATT_SERVICES_DISCOVERED")
+                    displayGattServices(bluetoothService?.getSupportedGattServices())
+                }
                 else -> {
                     Log.e(TAG, "BLT:: ACTION GATT ERROR")
                     hideProgress()
                     Utils.showOkDialog(this@MainActivity, "", "Some went wrong. Try again")
                 }
             }
+        }
+    }
+
+    // iterate through the supported GATT
+    private fun displayGattServices(gattServices: List<BluetoothGattService?>?) {
+        if (gattServices == null) return
+
+        val unknownServiceString: String = resources.getString(R.string.unknown_service)
+        val unknownCharaString: String = resources.getString(R.string.unknown_characteristic)
+
+        val gattServiceData = mutableListOf<HashMap<String, String>>()
+        val gattCharacteristicData = mutableListOf<ArrayList<HashMap<String, String>>>()
+
+
+        var countServise = 0
+
+        // Loops through available GATT Services.
+        gattServices.forEach { gattService ->
+
+            val currentServiceData = hashMapOf<String, String>()
+
+            gattService?.uuid.toString().let { uuid ->
+                currentServiceData[LIST_NAME] =
+                    SampleGattAttributes.lookup(uuid = uuid, defaultName = unknownServiceString)
+                currentServiceData[LIST_UUID] = uuid
+
+                gattServiceData += currentServiceData //TODO 1
+
+                countServise++
+
+                // print current Service Data
+                for ((key, value) in currentServiceData) {
+                    println("$countServise  ::> GATT Service Data  $key  $value")
+                }
+            }
+
+            // Loops through available Characteristics.
+            val charas = mutableListOf<BluetoothGattCharacteristic>()
+            val gattCharacteristicGroupData = arrayListOf<HashMap<String, String>>()
+            mGattCharacteristics = mutableListOf()
+
+            gattService?.characteristics?.forEach { chara ->
+                charas += chara
+                val currentCharaData = hashMapOf<String, String>()
+
+                val uuid = chara.uuid.toString()
+
+                currentCharaData[LIST_NAME] =
+                    SampleGattAttributes.lookup(uuid = uuid, defaultName = unknownCharaString)
+                currentCharaData[LIST_UUID] = uuid
+
+                gattCharacteristicGroupData += currentCharaData
+                // print current Characteristic Data
+                for ((key, value) in currentCharaData) {
+                    println("\t::> Characteristic    $key  $value")
+                }
+            }
+            mGattCharacteristics += (charas as ArrayList<BluetoothGattCharacteristic>)
+            gattCharacteristicData += gattCharacteristicGroupData  //TODO 2
         }
     }
 

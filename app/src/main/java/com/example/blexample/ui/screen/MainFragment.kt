@@ -70,7 +70,6 @@ class MainFragment : BaseFragment() {
             val isDeviceConnected = data?.let {
                 textCurrentDeviceName.text = it.name
                 textCurrentDeviceAddress.text = it.address
-                textCurrentDeviceUUID.text = it.uuids.toString()
             } != null
             textMessage.invisible(isDeviceConnected)
             frameCurrentDevice.invisible(!isDeviceConnected)

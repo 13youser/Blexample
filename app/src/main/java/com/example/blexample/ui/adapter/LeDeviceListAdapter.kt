@@ -75,8 +75,5 @@ object DeviceDiffCallback : DiffUtil.ItemCallback<BluetoothDevice>() {
     override fun areItemsTheSame(oldItem: BluetoothDevice, newItem: BluetoothDevice) =
         oldItem == newItem
     override fun areContentsTheSame(oldItem: BluetoothDevice, newItem: BluetoothDevice) =
-        oldItem.uuids
-            .contentEquals(
-                newItem.uuids
-            )
+        oldItem.address == newItem.address
 }
