@@ -101,16 +101,21 @@ class DeviceScanFragment : BaseFragment() {
         viewModel.scanningCalled.observe(viewLifecycleOwner, { scanning ->
             if (scanning) leDeviceListAdapter?.clear()
             view?.post {
-                binding.buttonScanControl.text = getString(
-                    if (scanning)
-                        R.string.stop
-                    else
-                        R.string.scan
-                )
-                binding.textScanning.invisible(!scanning)
-                binding.progressScanning.invisible(!scanning)
+                with(binding) {
+                    buttonScanControl.text = getString(
+                        if (scanning)
+                            R.string.stop
+                        else
+                            R.string.scan
+                    )
+                    textScanning.invisible(!scanning)
+                    progressScanning.invisible(!scanning)
+//                    textCountFound.invisible(!scanning)
+                }
             }
-
+        })
+        leDeviceListAdapter?.liveCount?.observe(viewLifecycleOwner, {
+            binding.textCountFound.text = it.toString()
         })
     }
 

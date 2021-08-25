@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +18,12 @@ class LeDeviceListAdapter(
 
     companion object {
         const val ITEM_LAYOUT = R.layout.item_list
+    }
+
+    private val _liveCount = MutableLiveData<Int>()
+    val liveCount: LiveData<Int> = _liveCount
+    init {
+        _liveCount.value = 0
     }
 
     private val listDevice = mutableListOf<BluetoothDevice>()
@@ -32,6 +40,9 @@ class LeDeviceListAdapter(
         listDevice.clear()
         notifyDataSetChanged()
     }
+
+    override fun getItemCount(): Int = super.getItemCount()
+        .also { count -> _liveCount.value = count }
 
     class DeviceViewHolder(
         itemView: View, val onClick: (BluetoothDevice) -> Unit
