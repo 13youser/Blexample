@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import com.example.blexample.utils.SampleGattAttributes
 
 class BluetoothLeService : Service() {
 
@@ -22,8 +23,11 @@ class BluetoothLeService : Service() {
             "com.example.blexample.bluetooth.le.ACTION_GATT_DISCONNECTED"
         const val ACTION_GATT_SERVICES_DISCOVERED =
             "com.example.blexample.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED"
+        const val ACTION_DATA_AVAILABLE =
+            "com.example.blexample.bluetooth.le.ACTION_DATA_AVAILABLE"
 
         const val EXTRA_DEVICE_CONNECTED = "EXTRA_DEVICE_CONNECTED"
+        const val EXTRA_CHARACTERISTIC = "EXTRA_CHARACTERISTIC"
     }
 
     private val binder = LocalBinder()
@@ -80,8 +84,16 @@ class BluetoothLeService : Service() {
         }
     }
 
-    fun getSupportedGattServices(): List<BluetoothGattService?>? {
-        return bluetoothGatt?.services
+    /** Get all the supported services and characteristics in GATT server of connected Device  */
+    fun getSupportedGattServices(): List<BluetoothGattService?>? =
+        bluetoothGatt?.services
+
+
+    fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
+        bluetoothGatt?.readCharacteristic(characteristic)
+            ?: run {
+                Log.w(TAG, "BluetoothGatt not initialized")
+            }
     }
 
     private val gattCallback = object : BluetoothGattCallback() {
@@ -99,22 +111,67 @@ class BluetoothLeService : Service() {
                 }
             }
         }
-
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             when(status) {
-                BluetoothGatt.GATT_SUCCESS -> {
+                BluetoothGatt.GATT_SUCCESS ->
                     broadcast(action = ACTION_GATT_SERVICES_DISCOVERED)
-                }
-                else -> {
+                else ->
                     Log.w(TAG, "onServicesDiscovered received: $status")
-                }
+            }
+        }
+        override fun onCharacteristicRead(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?,
+            status: Int
+        ) {
+            when(status) {
+                BluetoothGatt.GATT_SUCCESS ->
+                    broadcast(action = ACTION_DATA_AVAILABLE, characteristic = characteristic)
+                else ->
+                    Log.w(TAG, "onCharacteristicRead received: $status")
             }
         }
     }
 
-    private fun broadcast(action: String, device: BluetoothDevice? = null) {
+    private fun broadcast(
+        action: String,
+        device: BluetoothDevice? = null,
+        characteristic: BluetoothGattCharacteristic? = null
+    ) {
         val intent = Intent(action)
+
         device?.let { intent.putExtra(EXTRA_DEVICE_CONNECTED, it) }
+
+        characteristic?.let { chara ->
+            when (chara.uuid.toString()) {
+                SampleGattAttributes.UUID_CHARACTERISTIC_HEART_RATE_MEASUREMENT -> {
+
+                    val flag = chara.properties
+                    val format = when (flag and 0x01) {
+                        0x01 -> {
+                            Log.d(TAG, "Heart rate format UINT16.")
+                            BluetoothGattCharacteristic.FORMAT_UINT16
+                        }
+                        else -> {
+                            Log.d(TAG, "Heart rate format UINT8.")
+                            BluetoothGattCharacteristic.FORMAT_UINT8
+                        }
+                    }
+                    val heartRate = chara.getIntValue(format, 1)
+                    Log.d(TAG, String.format("Received heart rate: %d", heartRate))
+                    intent.putExtra(EXTRA_CHARACTERISTIC, (heartRate).toString())
+                }
+                else -> {
+                    // For all other profiles, writes the data formatted in HEX.
+                    val data = chara.value
+                    if (data.isNotEmpty()) {
+                        intent.putExtra(EXTRA_CHARACTERISTIC, data)
+                    }
+                    else { }
+                }
+            }
+        }
+
         sendBroadcast(intent)
     }
 }

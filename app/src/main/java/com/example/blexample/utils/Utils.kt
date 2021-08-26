@@ -25,4 +25,10 @@ object Utils {
         okDialog = builder.create()
         okDialog?.show()
     }
+
+    val ASCII = mapOf(
+        "44" to ".", "46" to ".", "45" to "-",
+        "48" to "0", "49" to "1", "50" to "2", "51" to "3", "52" to "4",
+        "53" to "5", "54" to "6", "55" to "7", "56" to "8", "57" to "9"
+    )
 }

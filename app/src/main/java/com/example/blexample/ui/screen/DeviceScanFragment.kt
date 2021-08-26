@@ -110,7 +110,6 @@ class DeviceScanFragment : BaseFragment() {
                     )
                     textScanning.invisible(!scanning)
                     progressScanning.invisible(!scanning)
-//                    textCountFound.invisible(!scanning)
                 }
             }
         })
