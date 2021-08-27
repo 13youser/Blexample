@@ -55,7 +55,7 @@ class DeviceViewModel(
             _scanResultDevice.value = result.device
         }
     }
-    var currentLeDeviceData: LeDeviceData? = prefs.leDeviceData
+    var currentLeDeviceData: LeDeviceData? = null
         get() = _currentDeviceLiveData.value
             ?: prefs.leDeviceData
                 .also { _currentDeviceLiveData.value = it }
@@ -75,6 +75,7 @@ class DeviceViewModel(
     val scanResultDevice: LiveData<BluetoothDevice> get() = _scanResultDevice
 
     private val _currentDeviceLiveData = MutableLiveData<LeDeviceData?>()
+        .also { it.value = prefs.leDeviceData }
     val currentLeDeviceLiveData: LiveData<LeDeviceData?> get() = _currentDeviceLiveData
 
     private fun callStartScanLe() {
@@ -189,6 +190,7 @@ class DeviceViewModel(
                 // find the necessary characteristics for handle
                 when(uuid) {
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
+                    SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
                     -> {
                         println(":> FOUND CHARACTERISTIC: ${
                             SampleGattAttributes.lookup(chara.uuid.toString(), unknownCharaString)

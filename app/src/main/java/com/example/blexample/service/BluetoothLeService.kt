@@ -7,7 +7,12 @@ import android.os.Binder
 import android.os.Handler
 import android.os.IBinder
 import android.util.Log
+import com.example.blexample.utils.DisposableManager
 import com.example.blexample.utils.SampleGattAttributes
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 
 class BluetoothLeService : Service() {
 
@@ -31,13 +36,17 @@ class BluetoothLeService : Service() {
         const val EXTRA_CHARACTERISTIC = "EXTRA_CHARACTERISTIC"
     }
 
+    private val disposableManager = DisposableManager()
+
     private val binder = LocalBinder()
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothGatt: BluetoothGatt? = null
     var currentDevice: BluetoothDevice? = null
+    private var isRepeatRead = false
 
     override fun onBind(intent: Intent): IBinder = binder
     override fun onUnbind(intent: Intent?): Boolean {
+        disposableManager.clear()
         close()
         return super.onUnbind(intent)
     }
@@ -89,22 +98,32 @@ class BluetoothLeService : Service() {
     fun getSupportedGattServices(): List<BluetoothGattService?>? =
         bluetoothGatt?.services
 
+    fun readCharacteristic(characteristic: BluetoothGattCharacteristic, repeat: Boolean = false) {
+        bluetoothGatt?.let { gatt ->
+            if (repeat) isRepeatRead = true
 
-    /*TODO
-     * читать в цикле!
-     */
-
-    fun singleReadCharacteristic(characteristic: BluetoothGattCharacteristic) {
-        Handler().post {
-            bluetoothGatt?.readCharacteristic(characteristic)
-                ?: run {
-                    Log.w(TAG, "BluetoothGatt not initialized")
-                }
+            disposableManager.add(
+                Observable
+                    .fromCallable { gatt.readCharacteristic(characteristic) }
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .repeatUntil { !isRepeatRead }
+                    .subscribe(
+                        { Log.d(TAG, "readCharacteristic::> " +
+                                    if (it) "SUCCESS" else "FAILED")
+                        },
+                        { Log.e(TAG, "readCharacteristic::> " +
+                                    "THROWABLE $it")
+                        }
+                    )
+            )
+        } ?: run {
+            Log.w(TAG, "BluetoothGatt not initialized")
         }
     }
 
-    fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
-
+    fun stopRead() {
+        isRepeatRead = false
     }
 
     private val gattCallback = object : BluetoothGattCallback() {

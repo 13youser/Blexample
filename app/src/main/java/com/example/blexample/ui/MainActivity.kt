@@ -109,8 +109,12 @@ class MainActivity : AppCompatActivity() {
             override fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic) {
                 when (characteristic.uuid.toString()) {
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_1, //TODO
+                    SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
                     -> {
-                        bluetoothService?.singleReadCharacteristic(characteristic)
+                        bluetoothService?.readCharacteristic(
+                            characteristic = characteristic,
+                            repeat = false
+                        )
                     }
                 }
             }

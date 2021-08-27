@@ -57,11 +57,9 @@ dependencies {
     // Koin DI
     implementation "io.insert-koin:koin-android:$koin_version"
     implementation "io.insert-koin:koin-android-compat:$koin_version"
-    // RX Java 2
+    // RX Java 2        //TODO try COROUTINE instead
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
-    // Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0"
     // JSON parser
     implementation 'com.google.code.gson:gson:2.8.7'
 }
