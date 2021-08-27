@@ -105,8 +105,8 @@ class MainActivity : AppCompatActivity() {
                 showProgress()
                 val succ = bluetoothService?.connect(device.address)
             }
-            override fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
-                bluetoothService?.readCharacteristic(characteristic)
+            override fun singleReadCharacteristic(characteristic: BluetoothGattCharacteristic) {
+                bluetoothService?.singleReadCharacteristic(characteristic)
             }
         }
     }

@@ -4,6 +4,7 @@ import android.app.Service
 import android.bluetooth.*
 import android.content.Intent
 import android.os.Binder
+import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import com.example.blexample.utils.SampleGattAttributes
@@ -89,11 +90,21 @@ class BluetoothLeService : Service() {
         bluetoothGatt?.services
 
 
+    /*TODO
+     * читать в цикле!
+     */
+
+    fun singleReadCharacteristic(characteristic: BluetoothGattCharacteristic) {
+        Handler().post {
+            bluetoothGatt?.readCharacteristic(characteristic)
+                ?: run {
+                    Log.w(TAG, "BluetoothGatt not initialized")
+                }
+        }
+    }
+
     fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
-        bluetoothGatt?.readCharacteristic(characteristic)
-            ?: run {
-                Log.w(TAG, "BluetoothGatt not initialized")
-            }
+
     }
 
     private val gattCallback = object : BluetoothGattCallback() {

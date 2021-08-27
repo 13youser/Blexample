@@ -17,6 +17,10 @@ object SampleGattAttributes {
 
     const val UUID_DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIG =    "00002902-0000-1000-8000-00805f9b34fb"
 
+    // ST microchip
+    const val ST_UUID_SERVICE =                                 "d973f2e0-b19e-11e2-9e96-0800200c9a66"
+    const val ST_UUID_CHARACTERISTIC_1 =                        "d973f2e1-b19e-11e2-9e96-0800200c9a66"
+    const val ST_UUID_CHARACTERISTIC_2 =                        "d973f2e2-b19e-11e2-9e96-0800200c9a66"
 
     // ?
     const val UUID_SERVICE_CONNECTING_UUID =                    "f000c0c0-0451-4000-b000-000000000000"
@@ -43,10 +47,10 @@ object SampleGattAttributes {
         UUID_CHARACTERISTIC_WRITE_UUID to "Characteristic Write UUID",
         UUID_CHARACTERISTIC_READ_UUID to "Characteristic Read UUID",
 
-        // ST
-        "d973f2e0-b19e-11e2-9e96-0800200c9a66" to "Service 128bits UUID",
-        "d973f2e1-b19e-11e2-9e96-0800200c9a66" to "Characteristic_1 128bits UUID",
-        "d973f2e2-b19e-11e2-9e96-0800200c9a66" to "Characteristic_2 128bits UUID",
+        // UUID of STMicroelectronics
+        ST_UUID_SERVICE to "Service 128bits UUID",
+        ST_UUID_CHARACTERISTIC_1 to "Characteristic_1 128bits UUID",
+        ST_UUID_CHARACTERISTIC_2 to "Characteristic_2 128bits UUID",
     )
 
     fun lookup(uuid: String, defaultName: String): String {

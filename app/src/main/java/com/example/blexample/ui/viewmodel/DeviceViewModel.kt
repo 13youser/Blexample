@@ -33,7 +33,7 @@ class DeviceViewModel(
     }
     interface Callbacks {
         fun connect(device: BluetoothDevice)
-        fun readCharacteristic(characteristic: BluetoothGattCharacteristic)
+        fun singleReadCharacteristic(characteristic: BluetoothGattCharacteristic)
     }
     private val callableStartScanning = Callable<Unit> {
         leScanCallback?.let {
@@ -47,7 +47,8 @@ class DeviceViewModel(
     }
     private var bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private var leScanner: BluetoothLeScanner? = bluetoothAdapter?.bluetoothLeScanner
-    private var mGattCharacteristics = mutableListOf<ArrayList<BluetoothGattCharacteristic>>()
+    private var currentReadCharacteristic: BluetoothGattCharacteristic? = null
+    private var listGattCharacteristics = mutableListOf<ArrayList<BluetoothGattCharacteristic>>()
     private val runnableForPendingStopScanning = Runnable { callStopScanLe() }
     private val handler = Handler()
 
@@ -147,62 +148,59 @@ class DeviceViewModel(
         val unknownServiceString: String = resources.getString(R.string.unknown_service)
         val unknownCharaString: String = resources.getString(R.string.unknown_characteristic)
 
-        val gattServiceData = mutableListOf<HashMap<String, String>>()
-        val gattCharacteristicData = mutableListOf<ArrayList<HashMap<String, String>>>()
-
-
-        var countServise = 0
+        //val gattServiceData = mutableListOf<HashMap<String, String>>() //TODO S
+        //val gattCharacteristicData = mutableListOf<ArrayList<HashMap<String, String>>>() //TODO C
 
         // Loops through available GATT Services.
+        var countServise = 0
         gattServices.forEach { gattService ->
-
             val currentServiceData = hashMapOf<String, String>()
-
             gattService?.uuid.toString().let { uuid ->
                 currentServiceData[LIST_NAME] =
                     SampleGattAttributes.lookup(uuid = uuid, defaultName = unknownServiceString)
                 currentServiceData[LIST_UUID] = uuid
 
-                gattServiceData += currentServiceData //TODO 1
-
-                countServise++
+                //gattServiceData += currentServiceData //TODO S
 
                 // print current Service Data
+                countServise++
                 for ((key, value) in currentServiceData) {
-                    println("$countServise  ::> GATT Service Data  $key  $value")
+                    println("$countServise  ::> GATT Service  $key  $value")
                 }
             }
 
             // Loops through available Characteristics.
-            val charas = mutableListOf<BluetoothGattCharacteristic>()
-            val gattCharacteristicGroupData = arrayListOf<HashMap<String, String>>()
-            mGattCharacteristics = mutableListOf()
-
+            val charas = arrayListOf<BluetoothGattCharacteristic>()
+            //val gattCharacteristicGroupData = arrayListOf<HashMap<String, String>>() //TODO C
+            listGattCharacteristics = mutableListOf()
             gattService?.characteristics?.forEach { chara ->
                 charas += chara
                 val currentCharaData = hashMapOf<String, String>()
 
                 val uuid = chara.uuid.toString()
 
-                //TODO choose characteristic to read
-                if (uuid == SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING) {
-                    println(":> READ   UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING")
-                    callbacks?.readCharacteristic(chara)
+                //TODO:: choose characteristic to read
+                if (uuid == SampleGattAttributes.ST_UUID_CHARACTERISTIC_1) {
+                    println(":> READ CHARACTERISTIC: ${
+                        SampleGattAttributes.lookup(chara.uuid.toString(), unknownCharaString)
+                    }")
+                    currentReadCharacteristic = chara
+                    callbacks?.singleReadCharacteristic(chara)
                 }
 
                 currentCharaData[LIST_NAME] =
                     SampleGattAttributes.lookup(uuid = uuid, defaultName = unknownCharaString)
                 currentCharaData[LIST_UUID] = uuid
 
-                gattCharacteristicGroupData += currentCharaData
+                //gattCharacteristicGroupData += currentCharaData //TODO C
 
                 // print current Characteristic Data
                 for ((key, value) in currentCharaData) {
                     println("\t::> Characteristic    $key  $value")
                 }
             }
-            mGattCharacteristics += (charas as ArrayList<BluetoothGattCharacteristic>)
-            gattCharacteristicData += gattCharacteristicGroupData  //TODO 2
+            listGattCharacteristics += charas
+            //gattCharacteristicData += gattCharacteristicGroupData //TODO C
         }
     }
 }
