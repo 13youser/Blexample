@@ -7,6 +7,7 @@ import android.os.Binder
 import android.os.Handler
 import android.os.IBinder
 import android.util.Log
+import com.example.blexample.R
 import com.example.blexample.utils.DisposableManager
 import com.example.blexample.utils.SampleGattAttributes
 import io.reactivex.Completable
@@ -55,7 +56,7 @@ class BluetoothLeService : Service() {
      * When the activity unbinds from the service, the connection must be closed to avoid draining
      * the device battery.
      */
-    private fun close() {
+    fun close() {
         bluetoothGatt?.let { gatt ->
             gatt.close()
             bluetoothGatt = null
@@ -102,6 +103,11 @@ class BluetoothLeService : Service() {
         bluetoothGatt?.let { gatt ->
             if (repeat) isRepeatRead = true
 
+            val name = SampleGattAttributes.lookup(
+                uuid = characteristic.uuid.toString(),
+                defaultName = resources.getString(R.string.unknown_characteristic)
+            )
+
             disposableManager.add(
                 Observable
                     .fromCallable { gatt.readCharacteristic(characteristic) }
@@ -109,10 +115,10 @@ class BluetoothLeService : Service() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .repeatUntil { !isRepeatRead }
                     .subscribe(
-                        { Log.d(TAG, "readCharacteristic::> " +
+                        { Log.d(TAG, "readCharacteristic::> ($name) " +
                                     if (it) "SUCCESS" else "FAILED")
                         },
-                        { Log.e(TAG, "readCharacteristic::> " +
+                        { Log.e(TAG, "readCharacteristic::> ($name) " +
                                     "THROWABLE $it")
                         }
                     )
@@ -160,6 +166,13 @@ class BluetoothLeService : Service() {
                 else ->
                     Log.w(TAG, "onCharacteristicRead received: $status")
             }
+        }
+        override fun onCharacteristicWrite(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?,
+            status: Int
+        ) {
+            super.onCharacteristicWrite(gatt, characteristic, status)
         }
     }
 

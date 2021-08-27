@@ -49,8 +49,7 @@ class MainFragment : BaseFragment() {
 
         with(binding) {
             buttonForget.setOnClickListener {
-                viewModel.currentLeDeviceData = null
-                //TODO disconnect device and forget
+                viewModel.forgetDevice()
             }
             buttonSearchNew.setOnClickListener {
                 it.navigateAction(R.id.action_mainFragment_to_listFragment)

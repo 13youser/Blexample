@@ -103,12 +103,18 @@ class MainActivity : AppCompatActivity() {
     private fun observeEvents() {
         viewModel.callbacks = object : DeviceViewModel.Callbacks {
             override fun connect(device: BluetoothDevice) {
+                Log.i(TAG, "GATT::> connect")
                 showProgress()
                 bluetoothService?.connect(device.address)
+            }
+            override fun disconnect() {
+                Log.i(TAG, "GATT::> disconnect")
+                bluetoothService?.close()
             }
             override fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic) {
                 when (characteristic.uuid.toString()) {
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_1, //TODO
+                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
                     SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
                     -> {
                         bluetoothService?.readCharacteristic(

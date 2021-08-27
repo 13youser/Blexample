@@ -53,6 +53,7 @@ object SampleGattAttributes {
         ST_UUID_CHARACTERISTIC_2 to "Characteristic_2 128bits UUID",
     )
 
+    /** Find name */
     fun lookup(uuid: String, defaultName: String): String {
         val name = attributes[uuid]
         return name ?: defaultName

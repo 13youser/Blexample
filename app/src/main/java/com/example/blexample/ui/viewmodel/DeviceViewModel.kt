@@ -38,6 +38,7 @@ class DeviceViewModel(
 
     interface Callbacks {
         fun connect(device: BluetoothDevice)
+        fun disconnect()
         fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic)
     }
 
@@ -77,6 +78,11 @@ class DeviceViewModel(
     private val _currentDeviceLiveData = MutableLiveData<LeDeviceData?>()
         .also { it.value = prefs.leDeviceData }
     val currentLeDeviceLiveData: LiveData<LeDeviceData?> get() = _currentDeviceLiveData
+
+    fun forgetDevice() {
+        callbacks?.disconnect()
+        currentLeDeviceData = null
+    }
 
     private fun callStartScanLe() {
         _scanningCalled.value = true
@@ -190,6 +196,7 @@ class DeviceViewModel(
                 // find the necessary characteristics for handle
                 when(uuid) {
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
+                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
                     SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
                     -> {
                         println(":> FOUND CHARACTERISTIC: ${
