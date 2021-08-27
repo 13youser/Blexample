@@ -194,7 +194,7 @@ class DeviceViewModel(
                 val uuid = chara.uuid.toString()
 
                 // find the necessary characteristics for handle
-                when(uuid) {
+                when(uuid) { //TODO-1
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
                     SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,

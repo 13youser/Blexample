@@ -109,17 +109,24 @@ class MainActivity : AppCompatActivity() {
             }
             override fun disconnect() {
                 Log.i(TAG, "GATT::> disconnect")
-                bluetoothService?.close()
+                bluetoothService?.disconnect()
             }
             override fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic) {
-                when (characteristic.uuid.toString()) {
-                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1, //TODO
-                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
+                when (characteristic.uuid.toString()) { //TODO-2
+//                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
+//                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
                     SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
                     -> {
                         bluetoothService?.readCharacteristic(
                             characteristic = characteristic,
                             repeat = false
+                        )
+                    }
+                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
+//                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
+                    -> {
+                        bluetoothService?.writeCharacteristic(
+                            characteristic = characteristic
                         )
                     }
                 }
@@ -157,6 +164,7 @@ class MainActivity : AppCompatActivity() {
                 BluetoothLeService.ACTION_GATT_DISCONNECTED -> {
                     Log.i(TAG, "BLT:: ACTION_GATT_DISCONNECTED")
                     hideProgress()
+                    bluetoothService?.disconnect()
                     viewModel.currentLeDeviceData = null
                     Utils.showOkDialog(this@MainActivity, "", "GATT disconnected")
                 }
