@@ -1,7 +1,8 @@
-package com.example.blexample.data
+package com.example.blexample.data.local
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.blexample.data.model.LeDeviceData
 import com.google.gson.Gson
 
 class Preferences private constructor(context: Context) {
@@ -19,11 +20,11 @@ class Preferences private constructor(context: Context) {
             .getSharedPreferences(SHARED_PREFS_DEFAULT_FILE, Context.MODE_PRIVATE)
 
 
-    var deviceData: DeviceData?
+    var leDeviceData: LeDeviceData?
         get() =
             gson.fromJson(
                 prefs.getString(PREF_JSON_DEVICE_DATA, ""),
-                DeviceData::class.java
+                LeDeviceData::class.java
             )
         set(value) {
             prefs.edit().putString(PREF_JSON_DEVICE_DATA, gson.toJson(value)).apply()

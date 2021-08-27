@@ -12,10 +12,11 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.example.blexample.R
-import com.example.blexample.data.DeviceData
+import com.example.blexample.data.model.LeDeviceData
 import com.example.blexample.databinding.ActivityMainBinding
 import com.example.blexample.service.BluetoothLeService
 import com.example.blexample.ui.viewmodel.DeviceViewModel
+import com.example.blexample.utils.SampleGattAttributes
 import com.example.blexample.utils.Utils
 import com.incotex.mercurycashbox.ui.base.gone
 import com.incotex.mercurycashbox.ui.base.invisible
@@ -103,10 +104,15 @@ class MainActivity : AppCompatActivity() {
         viewModel.callbacks = object : DeviceViewModel.Callbacks {
             override fun connect(device: BluetoothDevice) {
                 showProgress()
-                val succ = bluetoothService?.connect(device.address)
+                bluetoothService?.connect(device.address)
             }
-            override fun singleReadCharacteristic(characteristic: BluetoothGattCharacteristic) {
-                bluetoothService?.singleReadCharacteristic(characteristic)
+            override fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic) {
+                when (characteristic.uuid.toString()) {
+                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1, //TODO
+                    -> {
+                        bluetoothService?.singleReadCharacteristic(characteristic)
+                    }
+                }
             }
         }
     }
@@ -132,7 +138,7 @@ class MainActivity : AppCompatActivity() {
                         BluetoothLeService.EXTRA_DEVICE_CONNECTED
                     )?.let {
                         println(":> on connect UUID=${it.uuids}")
-                        viewModel.currentDeviceData = DeviceData(it.name, it.address)
+                        viewModel.currentLeDeviceData = LeDeviceData(it.name, it.address)
                     }
 
                     hideProgress()
@@ -141,7 +147,7 @@ class MainActivity : AppCompatActivity() {
                 BluetoothLeService.ACTION_GATT_DISCONNECTED -> {
                     Log.i(TAG, "BLT:: ACTION_GATT_DISCONNECTED")
                     hideProgress()
-                    viewModel.currentDeviceData = null
+                    viewModel.currentLeDeviceData = null
                     Utils.showOkDialog(this@MainActivity, "", "GATT disconnected")
                 }
                 BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED -> {
@@ -150,9 +156,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 BluetoothLeService.ACTION_DATA_AVAILABLE -> {
                     Log.i(TAG, "BLT:: ACTION_DATA_AVAILABLE")
+
                     intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
-                    )?.let { data ->
+                    )?.let { data: ByteArray ->
+
                         val hexString: String =
                             data.joinToString(
                                 separator = " ",

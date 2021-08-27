@@ -2,8 +2,6 @@ package com.example.blexample.ui.screen
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -92,27 +90,27 @@ class DeviceScanFragment : BaseFragment() {
     }
 
     private fun observeEvents() {
-        viewModel.leScanCallback = object : ScanCallback() {
-            override fun onScanResult(callbackType: Int, result: ScanResult) {
-                super.onScanResult(callbackType, result)
-                leDeviceListAdapter?.add(device = result.device)
-            }
-        }
-        viewModel.scanningCalled.observe(viewLifecycleOwner, { scanning ->
-            if (scanning) leDeviceListAdapter?.clear()
-            view?.post {
-                with(binding) {
-                    buttonScanControl.text = getString(
-                        if (scanning)
-                            R.string.stop
-                        else
-                            R.string.scan
-                    )
-                    textScanning.invisible(!scanning)
-                    progressScanning.invisible(!scanning)
+        with(viewModel) {
+            scanningCalled.observe(viewLifecycleOwner, { scanning ->
+                if (scanning) leDeviceListAdapter?.clear()
+                view?.post {
+                    with(binding) {
+                        buttonScanControl.text = getString(
+                            if (scanning)
+                                R.string.stop
+                            else
+                                R.string.scan
+                        )
+                        textScanning.invisible(!scanning)
+                        progressScanning.invisible(!scanning)
+                    }
                 }
-            }
-        })
+            })
+            scanResultDevice.observe(viewLifecycleOwner, {
+                leDeviceListAdapter?.add(device = it)
+            })
+        }
+
         leDeviceListAdapter?.liveCount?.observe(viewLifecycleOwner, {
             binding.textCountFound.text = it.toString()
         })

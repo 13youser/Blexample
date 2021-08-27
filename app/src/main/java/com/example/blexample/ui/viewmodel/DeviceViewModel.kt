@@ -6,14 +6,15 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
 import android.content.res.Resources
 import android.os.Handler
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.blexample.R
-import com.example.blexample.data.DeviceData
-import com.example.blexample.data.Preferences
+import com.example.blexample.data.model.LeDeviceData
+import com.example.blexample.data.local.Preferences
 import com.example.blexample.ui.base.BaseViewModel
 import com.example.blexample.utils.SampleGattAttributes
 import io.reactivex.Completable
@@ -21,8 +22,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.Callable
 
+/** Scanning and current */
 class DeviceViewModel(
-    private val prefs: Preferences
+    private val prefs: Preferences,
 ) : BaseViewModel() {
 
     private companion object {
@@ -31,49 +33,49 @@ class DeviceViewModel(
         const val LIST_NAME = "NAME"
         const val LIST_UUID = "uuid"
     }
+
+    var callbacks: Callbacks? = null
+
     interface Callbacks {
         fun connect(device: BluetoothDevice)
-        fun singleReadCharacteristic(characteristic: BluetoothGattCharacteristic)
+        fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic)
     }
+
     private val callableStartScanning = Callable<Unit> {
-        leScanCallback?.let {
-            leScanner?.startScan(it)
-        }
+        leScanner?.startScan(leScanCallback)
     }
     private val callableStopScanning = Callable<Unit> {
-        leScanCallback?.let {
-            leScanner?.stopScan(it)
-        }
+        leScanner?.stopScan(leScanCallback)
     }
     private var bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private var leScanner: BluetoothLeScanner? = bluetoothAdapter?.bluetoothLeScanner
-    private var currentReadCharacteristic: BluetoothGattCharacteristic? = null
+    private val leScanCallback: ScanCallback = object : ScanCallback() {
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            super.onScanResult(callbackType, result)
+            _scanResultDevice.value = result.device
+        }
+    }
+    var currentLeDeviceData: LeDeviceData? = prefs.leDeviceData
+        get() = _currentDeviceLiveData.value
+            ?: prefs.leDeviceData
+                .also { _currentDeviceLiveData.value = it }
+        set(value) {
+            field = value
+            prefs.leDeviceData = value
+            _currentDeviceLiveData.value = value
+        }
     private var listGattCharacteristics = mutableListOf<ArrayList<BluetoothGattCharacteristic>>()
-    private val runnableForPendingStopScanning = Runnable { callStopScanLe() }
     private val handler = Handler()
+    private val runnableForPendingStopScanning = Runnable { callStopScanLe() }
 
     private val _scanningCalled = MutableLiveData<Boolean>()
     val scanningCalled: LiveData<Boolean> get() = _scanningCalled
 
-    private val _currentDeviceLiveData = MutableLiveData<DeviceData?>()
-    val currentDeviceLiveData: LiveData<DeviceData?> get() = _currentDeviceLiveData
+    private val _scanResultDevice = MutableLiveData<BluetoothDevice>()
+    val scanResultDevice: LiveData<BluetoothDevice> get() = _scanResultDevice
 
-    var currentDeviceData: DeviceData? = null
-        get() = _currentDeviceLiveData.value
-            ?: prefs.deviceData
-                .also { _currentDeviceLiveData.value = it }
-        set(value) {
-            field = value
-            prefs.deviceData = value
-            _currentDeviceLiveData.value = value
-        }
-
-    init {
-        currentDeviceData = prefs.deviceData
-    }
-
-    var leScanCallback: ScanCallback? = null
-    var callbacks: Callbacks? = null
+    private val _currentDeviceLiveData = MutableLiveData<LeDeviceData?>()
+    val currentLeDeviceLiveData: LiveData<LeDeviceData?> get() = _currentDeviceLiveData
 
     private fun callStartScanLe() {
         _scanningCalled.value = true
@@ -90,6 +92,7 @@ class DeviceViewModel(
                 )
         )
     }
+
     private fun callStopScanLe() {
         _scanningCalled.value = false
 
@@ -116,12 +119,10 @@ class DeviceViewModel(
      * Start BLE devices scanning if it has not been started yet, otherwise stop
      */
     fun switchScanLeDevice() {
-        leScanCallback?.let {
-            if (_scanningCalled.value != true) { // Stops scanning after a pre-defined scan period.
-                callStartScanLe()
-            } else {
-                callStopScanLe()
-            }
+        if (_scanningCalled.value != true) { // Stops scanning after a pre-defined scan period.
+            callStartScanLe()
+        } else {
+            callStopScanLe()
         }
     }
 
@@ -137,11 +138,17 @@ class DeviceViewModel(
      */
     fun tryConnect(device: BluetoothDevice) {
         stopScanLeDevice()
-        currentDeviceData = DeviceData(device.name, device.address)
+        rememberData(device)
         callbacks?.connect(device)
     }
 
-    /** Iterate through the supported GATT */
+    private fun rememberData(device: BluetoothDevice) {
+        currentLeDeviceData = LeDeviceData(device.name, device.address)
+    }
+
+    /**
+     * Iterate through the supported GATT
+     * */
     fun handleGattServices(gattServices: List<BluetoothGattService?>?, resources: Resources) {
         if (gattServices == null) return
 
@@ -179,13 +186,15 @@ class DeviceViewModel(
 
                 val uuid = chara.uuid.toString()
 
-                //TODO:: choose characteristic to read
-                if (uuid == SampleGattAttributes.ST_UUID_CHARACTERISTIC_1) {
-                    println(":> READ CHARACTERISTIC: ${
-                        SampleGattAttributes.lookup(chara.uuid.toString(), unknownCharaString)
-                    }")
-                    currentReadCharacteristic = chara
-                    callbacks?.singleReadCharacteristic(chara)
+                // find the necessary characteristics for handle
+                when(uuid) {
+                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
+                    -> {
+                        println(":> FOUND CHARACTERISTIC: ${
+                            SampleGattAttributes.lookup(chara.uuid.toString(), unknownCharaString)
+                        }")
+                        callbacks?.handleFoundCharacteristic(chara)
+                    }
                 }
 
                 currentCharaData[LIST_NAME] =

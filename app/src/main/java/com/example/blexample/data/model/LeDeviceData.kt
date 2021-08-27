@@ -1,8 +1,8 @@
-package com.example.blexample.data
+package com.example.blexample.data.model
 
 //import android.os.ParcelUuid
 
-data class DeviceData(
+data class LeDeviceData(
     val name: String? = "no_name",
     val address: String? = "",
 //    val uuids: Array<ParcelUuid>?
@@ -11,7 +11,7 @@ data class DeviceData(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as DeviceData
+        other as LeDeviceData
 
         if (name != other.name) return false
         if (address != other.address) return false

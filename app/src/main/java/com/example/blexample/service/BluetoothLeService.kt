@@ -34,7 +34,7 @@ class BluetoothLeService : Service() {
     private val binder = LocalBinder()
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothGatt: BluetoothGatt? = null
-    var connectedDevice: BluetoothDevice? = null
+    var currentDevice: BluetoothDevice? = null
 
     override fun onBind(intent: Intent): IBinder = binder
     override fun onUnbind(intent: Intent?): Boolean {
@@ -72,12 +72,12 @@ class BluetoothLeService : Service() {
     fun connect(address: String): Boolean {
         bluetoothAdapter?.let {
             try {
-                connectedDevice = it.getRemoteDevice(address)
+                currentDevice = it.getRemoteDevice(address)
             } catch (e: IllegalArgumentException) {
                 Log.w(TAG, "Device not found with provided address.")
                 return false
             }
-            bluetoothGatt = connectedDevice?.connectGatt(this, false, gattCallback)
+            bluetoothGatt = currentDevice?.connectGatt(this, false, gattCallback)
             return bluetoothGatt != null
         } ?: run {
             Log.w(TAG, "BluetoothAdapter not initialized")
@@ -112,7 +112,7 @@ class BluetoothLeService : Service() {
             when(newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     // successfully connected to the GATT Server
-                    broadcast(action = ACTION_GATT_CONNECTED, device = connectedDevice)
+                    broadcast(action = ACTION_GATT_CONNECTED, device = currentDevice)
                     // Attempts to discover services after successful connection.
                     bluetoothGatt?.discoverServices()
                 }
