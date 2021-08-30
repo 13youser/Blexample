@@ -113,10 +113,75 @@ class MainActivity : AppCompatActivity() {
                 bluetoothService?.disconnect()
             }
             override fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic) {
-                when (characteristic.uuid.toString()) { //TODO-2
+                val chara = characteristic
+                val props: Int = chara.properties
+                when(props) {
+                    BluetoothGattCharacteristic.PROPERTY_BROADCAST -> {
+                        println(":> PROPERTY_BROADCAST")
+                    }
+                    BluetoothGattCharacteristic.PROPERTY_READ -> {
+                        println(":> PROPERTY_READ")
+                        /*bluetoothService?.readCharacteristic(
+                            characteristic = characteristic,
+                            repeat = false
+                        )*/
+                    }
+                    BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE -> {
+                        println(":> PROPERTY_WRITE_NO_RESPONSE")
+                    }
+                    BluetoothGattCharacteristic.PROPERTY_WRITE -> {
+                        println(":> PROPERTY_WRITE")
+                    }
+                    BluetoothGattCharacteristic.PROPERTY_NOTIFY -> {
+                        println(":> PROPERTY_NOTIFY")
+                        when (chara.uuid.toString()) {
+                            SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
+                            -> {
+                                /*characteristic.value = byteArrayOf(
+                                    0x30.toByte(),
+                                    0x31.toByte(),
+                                    0x32.toByte(),
+                                    0x33.toByte(),
+                                    0x34.toByte(),
+                                    0x35.toByte(),
+                                )*/
+                                chara.value = "Hello BLE".toByteArray()
+
+                                bluetoothService?.writeCharacteristic(
+                                    characteristic = chara,
+                                    repeat = false
+                                )
+                            }
+                        }
+                        println(":>>> ${SampleGattAttributes.lookup(
+                            chara.uuid.toString(), "-_-"
+                        )}")
+                    }
+                    BluetoothGattCharacteristic.PROPERTY_INDICATE -> {
+                        println(":> PROPERTY_INDICATE")
+                    }
+                    BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE -> {
+                        println(":> PROPERTY_SIGNED_WRITE")
+                    }
+                    BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS -> {
+                        println(":> PROPERTY_EXTENDED_PROPS")
+
+                    }
+                    else -> println(":> Unknown PROPERTY")
+                }
+
+                /*when (characteristic.uuid.toString()) { //TODO-2
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
+//                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
 //                    SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
                     -> {
+
+                        *//*val props: Int = characteristic.properties
+                        print(":> props: $props")
+                        if (props == BluetoothGattCharacteristic.PROPERTY_READ) {
+                            println(":> READ PROPERTY of 1")
+                        }*//*
+
                         bluetoothService?.readCharacteristic(
                             characteristic = characteristic,
                             repeat = false
@@ -124,12 +189,15 @@ class MainActivity : AppCompatActivity() {
                     }
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
                     -> {
+                    }
+                    *//*SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
+                    -> {
                         bluetoothService?.writeCharacteristic(
                             characteristic = characteristic,
                             repeat = false
                         )
-                    }
-                }
+                    }*//*
+                }*/
             }
         }
     }
@@ -159,18 +227,23 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     hideProgress()
-                    Utils.showOkDialog(this@MainActivity, "", "GATT connected")
+                    Utils.showOkDialog(this@MainActivity, "",
+                        "GATT connected")
                 }
                 BluetoothLeService.ACTION_GATT_DISCONNECTED -> {
                     Log.i(TAG, "BLT:: ACTION_GATT_DISCONNECTED")
                     hideProgress()
                     bluetoothService?.disconnect()
                     viewModel.currentLeDeviceData = null
-                    Utils.showOkDialog(this@MainActivity, "", "GATT disconnected")
+                    Utils.showOkDialog(this@MainActivity, "",
+                        "GATT disconnected")
                 }
                 BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED -> {
                     Log.i(TAG, "BLT:: ACTION_GATT_SERVICES_DISCOVERED")
-                    viewModel.handleGattServices(bluetoothService?.getSupportedGattServices(), resources)
+                    viewModel.handleGattServices(
+                        bluetoothService?.getSupportedGattServices(),
+                        resources
+                    )
                 }
                 BluetoothLeService.ACTION_RESULT_CHARA_READ -> {
                     Log.i(TAG, "BLT:: ACTION_RESULT_CHARA_READ")
@@ -178,8 +251,8 @@ class MainActivity : AppCompatActivity() {
                     intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
                     )?.let { data: ByteArray ->
-                        println(":> R-read data hex: ${Utils.bytesToHexString(data)}")
-                        println(":> R-read data: ${Utils.bytesToString(bytes = data)}")
+                        println(":> R-read data hex: ${Utils.bytesToHexString(bytes = data)}")
+                        println(":> R-read data ascii: ${Utils.bytesToAsciiString(bytes = data)}")
                     }
                 }
                 BluetoothLeService.ACTION_RESULT_CHARA_WRITE -> {
@@ -188,14 +261,15 @@ class MainActivity : AppCompatActivity() {
                     intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
                     )?.let { data: ByteArray ->
-                        println(":> W Sent data hex: ${Utils.bytesToHexString(data)}")
-                        println(":> W-Sent data: ${Utils.bytesToString(bytes = data)}")
+                        println(":> W Sent data hex: ${Utils.bytesToHexString(bytes = data)}")
+                        println(":> W-Sent data ascii: ${Utils.bytesToAsciiString(bytes = data)}")
                     }
                 }
                 else -> {
                     Log.e(TAG, "BLT:: ACTION GATT ERROR")
                     hideProgress()
-                    Utils.showOkDialog(this@MainActivity, "", "Some went wrong. Try again")
+                    Utils.showOkDialog(this@MainActivity, "",
+                        "Some went wrong. Try again")
                 }
             }
         }

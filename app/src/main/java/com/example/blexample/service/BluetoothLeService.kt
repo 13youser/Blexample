@@ -107,16 +107,6 @@ class BluetoothLeService : Service() {
         bluetoothGatt?.let { gatt ->
             if (repeat) isRepeatWrite = true
 
-            /*characteristic.value = byteArrayOf(
-                0x30.toByte(),
-                0x31.toByte(),
-                0x32.toByte(),
-                0x33.toByte(),
-                0x34.toByte(),
-                0x35.toByte(),
-            )*/
-            characteristic.value = "Hello BLE".toByteArray()
-
             val name = SampleGattAttributes.lookup(
                 uuid = characteristic.uuid.toString(),
                 defaultName = resources.getString(R.string.unknown_characteristic)

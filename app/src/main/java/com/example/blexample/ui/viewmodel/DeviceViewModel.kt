@@ -193,19 +193,6 @@ class DeviceViewModel(
 
                 val uuid = chara.uuid.toString()
 
-                // find the necessary characteristics for handle
-                when(uuid) { //TODO-1
-                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
-                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
-                    SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
-                    -> {
-                        println(":> FOUND CHARACTERISTIC: ${
-                            SampleGattAttributes.lookup(chara.uuid.toString(), unknownCharaString)
-                        }")
-                        callbacks?.handleFoundCharacteristic(chara)
-                    }
-                }
-
                 currentCharaData[LIST_NAME] =
                     SampleGattAttributes.lookup(uuid = uuid, defaultName = unknownCharaString)
                 currentCharaData[LIST_UUID] = uuid
@@ -216,6 +203,58 @@ class DeviceViewModel(
                 for ((key, value) in currentCharaData) {
                     println("\t::> Characteristic    $key  $value")
                 }
+                val props: Int = chara.properties
+                println("\t::> props: ${
+                    when(props) {
+                        BluetoothGattCharacteristic.PROPERTY_BROADCAST -> {
+//                                println(":> PROPERTY_BROADCAST")
+                            "PROPERTY_BROADCAST"
+                        }
+                        BluetoothGattCharacteristic.PROPERTY_READ -> {
+//                                println(":> PROPERTY_READ")
+                            "PROPERTY_READ"
+                        }
+                        BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE -> {
+//                                println(":> PROPERTY_WRITE_NO_RESPONSE")
+                            "PROPERTY_WRITE_NO_RESPONSE"
+                        }
+                        BluetoothGattCharacteristic.PROPERTY_WRITE -> {
+//                                println(":> PROPERTY_WRITE")
+                            "PROPERTY_WRITE"
+                        }
+                        BluetoothGattCharacteristic.PROPERTY_NOTIFY -> {
+//                                println(":> PROPERTY_NOTIFY")
+                            "PROPERTY_NOTIFY"
+                        }
+                        BluetoothGattCharacteristic.PROPERTY_INDICATE -> {
+//                                println(":> PROPERTY_INDICATE")
+                            "PROPERTY_INDICATE"
+                        }
+                        BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE -> {
+//                                println(":> PROPERTY_SIGNED_WRITE")
+                            "PROPERTY_SIGNED_WRITE"
+                        }
+                        BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS -> {
+//                                println(":> PROPERTY_EXTENDED_PROPS")
+                            "PROPERTY_EXTENDED_PROPS"
+                        }
+                        else -> "Unknown"
+                    }
+                }")
+
+                /*// find the necessary characteristics for handle
+                when(uuid) { //TODO-1
+                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
+                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
+                    SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
+                    -> {
+                        println(":> FOUND CHARACTERISTIC: ${
+                            SampleGattAttributes.lookup(chara.uuid.toString(), unknownCharaString)
+                        }")
+                        callbacks?.handleFoundCharacteristic(chara)
+                    }
+                }*/
+                callbacks?.handleFoundCharacteristic(chara)
             }
             listGattCharacteristics += charas
             //gattCharacteristicData += gattCharacteristicGroupData //TODO C
