@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.content.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import androidx.navigation.fragment.NavHostFragment
@@ -16,7 +17,6 @@ import com.example.blexample.data.model.LeDeviceData
 import com.example.blexample.databinding.ActivityMainBinding
 import com.example.blexample.service.BluetoothLeService
 import com.example.blexample.ui.viewmodel.DeviceViewModel
-import com.example.blexample.utils.SampleGattAttributes
 import com.example.blexample.utils.Utils
 import com.incotex.mercurycashbox.ui.base.gone
 import com.incotex.mercurycashbox.ui.base.invisible
@@ -101,6 +101,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    var count = 0
+
     private fun observeEvents() {
         viewModel.callbacks = object : DeviceViewModel.Callbacks {
             override fun connect(device: BluetoothDevice) {
@@ -113,18 +115,25 @@ class MainActivity : AppCompatActivity() {
                 bluetoothService?.disconnect()
             }
             override fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic) {
-                val chara = characteristic
-                val props: Int = chara.properties
+                val props: Int = characteristic.properties
+
                 when(props) {
                     BluetoothGattCharacteristic.PROPERTY_BROADCAST -> {
                         println(":> PROPERTY_BROADCAST")
                     }
                     BluetoothGattCharacteristic.PROPERTY_READ -> {
                         println(":> PROPERTY_READ")
-                        /*bluetoothService?.readCharacteristic(
-                            characteristic = characteristic,
-                            repeat = false
-                        )*/
+                        count++
+
+                        Handler().postDelayed(
+                            {
+                                bluetoothService?.readCharacteristic(
+                                    characteristic = characteristic,
+                                    repeat = false
+                                )
+                            },
+                            1000L * count // because reading often fails
+                        )
                     }
                     BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE -> {
                         println(":> PROPERTY_WRITE_NO_RESPONSE")
@@ -134,28 +143,6 @@ class MainActivity : AppCompatActivity() {
                     }
                     BluetoothGattCharacteristic.PROPERTY_NOTIFY -> {
                         println(":> PROPERTY_NOTIFY")
-                        when (chara.uuid.toString()) {
-                            SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
-                            -> {
-                                /*characteristic.value = byteArrayOf(
-                                    0x30.toByte(),
-                                    0x31.toByte(),
-                                    0x32.toByte(),
-                                    0x33.toByte(),
-                                    0x34.toByte(),
-                                    0x35.toByte(),
-                                )*/
-                                chara.value = "Hello BLE".toByteArray()
-
-                                bluetoothService?.writeCharacteristic(
-                                    characteristic = chara,
-                                    repeat = false
-                                )
-                            }
-                        }
-                        println(":>>> ${SampleGattAttributes.lookup(
-                            chara.uuid.toString(), "-_-"
-                        )}")
                     }
                     BluetoothGattCharacteristic.PROPERTY_INDICATE -> {
                         println(":> PROPERTY_INDICATE")
@@ -165,10 +152,22 @@ class MainActivity : AppCompatActivity() {
                     }
                     BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS -> {
                         println(":> PROPERTY_EXTENDED_PROPS")
-
                     }
                     else -> println(":> Unknown PROPERTY")
                 }
+
+                /*when (chara.uuid.toString()) { //TODO use
+                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
+                    -> {
+                        count++
+                        chara.value = "Hello BLE ${count}\n".toByteArray()
+
+                        bluetoothService?.writeCharacteristic(
+                            characteristic = chara,
+                            repeat = false
+                        )
+                    }
+                }*/
 
                 /*when (characteristic.uuid.toString()) { //TODO-2
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,

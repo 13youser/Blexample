@@ -204,7 +204,10 @@ class DeviceViewModel(
                     println("\t::> Characteristic    $key  $value")
                 }
                 val props: Int = chara.properties
-                println("\t::> props: ${
+
+//                if ((props and ))
+
+                println("\t::> props ($props): ${
                     when(props) {
                         BluetoothGattCharacteristic.PROPERTY_BROADCAST -> {
 //                                println(":> PROPERTY_BROADCAST")
