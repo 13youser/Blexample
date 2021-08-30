@@ -29,8 +29,10 @@ class BluetoothLeService : Service() {
             "com.example.blexample.bluetooth.le.ACTION_GATT_DISCONNECTED"
         const val ACTION_GATT_SERVICES_DISCOVERED =
             "com.example.blexample.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED"
-        const val ACTION_DATA_AVAILABLE =
-            "com.example.blexample.bluetooth.le.ACTION_DATA_AVAILABLE"
+        const val ACTION_RESULT_CHARA_READ =
+            "com.example.blexample.bluetooth.le.ACTION_RESULT_CHARA_READ"
+        const val ACTION_RESULT_CHARA_WRITE =
+            "com.example.blexample.bluetooth.le.ACTION_RESULT_CHARA_WRITE"
 
         const val EXTRA_DEVICE_CONNECTED = "EXTRA_DEVICE_CONNECTED"
         const val EXTRA_CHARACTERISTIC = "EXTRA_CHARACTERISTIC"
@@ -43,6 +45,7 @@ class BluetoothLeService : Service() {
     private var bluetoothGatt: BluetoothGatt? = null
     var currentDevice: BluetoothDevice? = null
     private var isRepeatRead = false
+    private var isRepeatWrite = false
 
     override fun onBind(intent: Intent): IBinder = binder
     override fun onUnbind(intent: Intent?): Boolean {
@@ -57,6 +60,7 @@ class BluetoothLeService : Service() {
      */
     fun disconnect() {
         stopRead()
+        stopWrite()
         bluetoothGatt?.let { gatt ->
             gatt.close()
             bluetoothGatt = null
@@ -99,12 +103,43 @@ class BluetoothLeService : Service() {
     fun getSupportedGattServices(): List<BluetoothGattService?>? =
         bluetoothGatt?.services
 
-    fun writeCharacteristic(characteristic: BluetoothGattCharacteristic) { //TODO-3 write
-        characteristic.value = byteArrayOf(
-            0x499602D2.toByte() // 1234567890
-        )
-        val b = bluetoothGatt?.writeCharacteristic(characteristic)
-        println(":>>> write chara fun :: $b")
+    fun writeCharacteristic(characteristic: BluetoothGattCharacteristic, repeat: Boolean = false) { //TODO-3 write
+        bluetoothGatt?.let { gatt ->
+            if (repeat) isRepeatWrite = true
+
+            /*characteristic.value = byteArrayOf(
+                0x30.toByte(),
+                0x31.toByte(),
+                0x32.toByte(),
+                0x33.toByte(),
+                0x34.toByte(),
+                0x35.toByte(),
+            )*/
+            characteristic.value = "Hello BLE".toByteArray()
+
+            val name = SampleGattAttributes.lookup(
+                uuid = characteristic.uuid.toString(),
+                defaultName = resources.getString(R.string.unknown_characteristic)
+            )
+
+            disposableManager.add(
+                Observable
+                    .fromCallable { gatt.writeCharacteristic(characteristic) }
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .repeatUntil { !isRepeatWrite }
+                    .subscribe(
+                        { Log.d(TAG, ":::+WRITE Characteristic::> " +
+                                "${if (it) "SUCCESS" else "FAILED"} ($name)")
+                        },
+                        { Log.e(TAG, ":::-WRITE Characteristic::> " +
+                                "THROWABLE ($name): $it")
+                        }
+                    )
+            )
+        } ?: run {
+            Log.w(TAG, "BluetoothGatt not initialized on WRITE:> chara")
+        }
     }
 
     fun readCharacteristic(characteristic: BluetoothGattCharacteristic, repeat: Boolean = false) {
@@ -123,23 +158,21 @@ class BluetoothLeService : Service() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .repeatUntil { !isRepeatRead }
                     .subscribe(
-                        { Log.d(TAG, "readCharacteristic::> " +
-                                "${if (it) "SUCCESS" else "FAILED"} ($name)"
-                        )
+                        { Log.d(TAG, ":::+READ Characteristic::> " +
+                                "${if (it) "SUCCESS" else "FAILED"} ($name)")
                         },
-                        { Log.e(TAG, "readCharacteristic::> " +
+                        { Log.e(TAG, ":::-READ Characteristic::> " +
                                     "THROWABLE ($name): $it")
                         }
                     )
             )
         } ?: run {
-            Log.w(TAG, "BluetoothGatt not initialized")
+            Log.w(TAG, "BluetoothGatt not initialized on READ:> chara")
         }
     }
 
-    fun stopRead() {
-        isRepeatRead = false
-    }
+    fun stopRead() { isRepeatRead = false }
+    fun stopWrite() { isRepeatWrite = false }
 
     private val gattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
@@ -171,7 +204,7 @@ class BluetoothLeService : Service() {
         ) {
             when(status) {
                 BluetoothGatt.GATT_SUCCESS ->
-                    broadcast(action = ACTION_DATA_AVAILABLE, characteristic = characteristic)
+                    broadcast(action = ACTION_RESULT_CHARA_READ, characteristic = characteristic)
                 else ->
                     Log.w(TAG, "onCharacteristicRead received: $status")
             }
@@ -181,7 +214,12 @@ class BluetoothLeService : Service() {
             characteristic: BluetoothGattCharacteristic?,
             status: Int
         ) {
-            super.onCharacteristicWrite(gatt, characteristic, status)
+            when(status) {
+                BluetoothGatt.GATT_SUCCESS ->
+                    broadcast(action = ACTION_RESULT_CHARA_WRITE, characteristic = characteristic)
+                else ->
+                    Log.w(TAG, "onCharacteristicWrite received: $status")
+            }
         }
     }
 
@@ -214,16 +252,15 @@ class BluetoothLeService : Service() {
                     intent.putExtra(EXTRA_CHARACTERISTIC, (heartRate).toString())
                 }
                 else -> {
-                    // For all other profiles, writes the data formatted in HEX.
+                    // For all other profiles, writes the data
                     val data = chara.value
-                    if (data.isNotEmpty()) {
+                    if (data.isNotEmpty())
                         intent.putExtra(EXTRA_CHARACTERISTIC, data)
-                    }
-                    else { }
+                    else
+                        Log.w(TAG, "Data empty...")
                 }
             }
         }
-
         sendBroadcast(intent)
     }
 

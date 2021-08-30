@@ -73,7 +73,8 @@ class MainActivity : AppCompatActivity() {
         filter2.addAction(BluetoothLeService.ACTION_GATT_CONNECTED)
         filter2.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED)
         filter2.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED)
-        filter2.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE)
+        filter2.addAction(BluetoothLeService.ACTION_RESULT_CHARA_READ)
+        filter2.addAction(BluetoothLeService.ACTION_RESULT_CHARA_WRITE)
         registerReceiver(gattUpdateReceiver, filter2)
     }
 
@@ -113,20 +114,21 @@ class MainActivity : AppCompatActivity() {
             }
             override fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic) {
                 when (characteristic.uuid.toString()) { //TODO-2
-//                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
+                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
 //                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
-                    SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
+//                    SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
                     -> {
                         bluetoothService?.readCharacteristic(
                             characteristic = characteristic,
                             repeat = false
                         )
                     }
-                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
-//                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
+//                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
+                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
                     -> {
                         bluetoothService?.writeCharacteristic(
-                            characteristic = characteristic
+                            characteristic = characteristic,
+                            repeat = false
                         )
                     }
                 }
@@ -172,8 +174,8 @@ class MainActivity : AppCompatActivity() {
                     Log.i(TAG, "BLT:: ACTION_GATT_SERVICES_DISCOVERED")
                     viewModel.handleGattServices(bluetoothService?.getSupportedGattServices(), resources)
                 }
-                BluetoothLeService.ACTION_DATA_AVAILABLE -> {
-                    Log.i(TAG, "BLT:: ACTION_DATA_AVAILABLE")
+                BluetoothLeService.ACTION_RESULT_CHARA_READ -> {
+                    Log.i(TAG, "BLT:: ACTION_RESULT_CHARA_READ")
 
                     intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
@@ -184,16 +186,24 @@ class MainActivity : AppCompatActivity() {
                                 separator = " ",
                                 transform = { byte -> String.format("%02X", byte) }
                             )
-                        println(":> DATA AVAILABLE :: $hexString")
-                        /* TODO use read data */
+                        println(":> R hexString: $hexString")
+                        println(":> R strData: ${Utils.bytesToString(bytes = data)}")
+                    }
+                }
+                BluetoothLeService.ACTION_RESULT_CHARA_WRITE -> {
+                    Log.i(TAG, "BLT:: ACTION_RESULT_CHARA_WRITE")
 
-                        /*// if read data it is a SERIAL NUMBER, we can print it like this
-                        val output = StringBuilder("")
-                        data.forEach { byte -> output.append(byte.toChar()) }
-                        println(":> SERIAL NUMBER, for example: $output")*/
+                    intent.getByteArrayExtra(
+                        BluetoothLeService.EXTRA_CHARACTERISTIC
+                    )?.let { data: ByteArray ->
 
-
-
+                        val hexString: String =
+                            data.joinToString(
+                                separator = " ",
+                                transform = { byte -> String.format("%02X", byte) }
+                            )
+                        println(":> W hexString: $hexString")
+                        println(":> W strData: ${Utils.bytesToString(bytes = data)}")
                     }
                 }
                 else -> {

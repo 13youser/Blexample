@@ -31,4 +31,10 @@ object Utils {
         "48" to "0", "49" to "1", "50" to "2", "51" to "3", "52" to "4",
         "53" to "5", "54" to "6", "55" to "7", "56" to "8", "57" to "9"
     )
+
+    fun bytesToString(bytes: ByteArray): String {
+        val output = StringBuilder("")
+        bytes.forEach { byte -> output.append(byte.toChar()) }
+        return output.toString()
+    }
 }

@@ -25,7 +25,9 @@ object SampleGattAttributes {
 
     // ST microchip
     const val ST_UUID_SERVICE =                                 "d973f2e0-b19e-11e2-9e96-0800200c9a66"
+    /**  */
     const val ST_UUID_CHARACTERISTIC_1 =                        "d973f2e1-b19e-11e2-9e96-0800200c9a66"
+    /** write */
     const val ST_UUID_CHARACTERISTIC_2 =                        "d973f2e2-b19e-11e2-9e96-0800200c9a66"
 
     // ?
