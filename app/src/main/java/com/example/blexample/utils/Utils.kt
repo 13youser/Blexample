@@ -37,4 +37,9 @@ object Utils {
         bytes.forEach { byte -> output.append(byte.toChar()) }
         return output.toString()
     }
+
+    fun bytesToHexString(data: ByteArray) = data.joinToString(
+        separator = " ",
+        transform = { byte -> String.format("%02X", byte) }
+    )
 }

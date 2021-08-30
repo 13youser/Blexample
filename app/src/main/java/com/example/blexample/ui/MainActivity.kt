@@ -115,7 +115,6 @@ class MainActivity : AppCompatActivity() {
             override fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic) {
                 when (characteristic.uuid.toString()) { //TODO-2
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
-//                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
 //                    SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
                     -> {
                         bluetoothService?.readCharacteristic(
@@ -123,7 +122,6 @@ class MainActivity : AppCompatActivity() {
                             repeat = false
                         )
                     }
-//                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
                     -> {
                         bluetoothService?.writeCharacteristic(
@@ -180,14 +178,8 @@ class MainActivity : AppCompatActivity() {
                     intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
                     )?.let { data: ByteArray ->
-
-                        val hexString: String =
-                            data.joinToString(
-                                separator = " ",
-                                transform = { byte -> String.format("%02X", byte) }
-                            )
-                        println(":> R hexString: $hexString")
-                        println(":> R strData: ${Utils.bytesToString(bytes = data)}")
+                        println(":> R-read data hex: ${Utils.bytesToHexString(data)}")
+                        println(":> R-read data: ${Utils.bytesToString(bytes = data)}")
                     }
                 }
                 BluetoothLeService.ACTION_RESULT_CHARA_WRITE -> {
@@ -196,14 +188,8 @@ class MainActivity : AppCompatActivity() {
                     intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
                     )?.let { data: ByteArray ->
-
-                        val hexString: String =
-                            data.joinToString(
-                                separator = " ",
-                                transform = { byte -> String.format("%02X", byte) }
-                            )
-                        println(":> W hexString: $hexString")
-                        println(":> W strData: ${Utils.bytesToString(bytes = data)}")
+                        println(":> W Sent data hex: ${Utils.bytesToHexString(data)}")
+                        println(":> W-Sent data: ${Utils.bytesToString(bytes = data)}")
                     }
                 }
                 else -> {
