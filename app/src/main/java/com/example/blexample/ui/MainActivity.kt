@@ -119,10 +119,8 @@ class MainActivity : AppCompatActivity() {
 
                 when(props) {
                     BluetoothGattCharacteristic.PROPERTY_BROADCAST -> {
-                        println(":> PROPERTY_BROADCAST")
                     }
                     BluetoothGattCharacteristic.PROPERTY_READ -> {
-                        println(":> PROPERTY_READ")
                         count++
 
                         Handler().postDelayed(
@@ -132,26 +130,20 @@ class MainActivity : AppCompatActivity() {
                                     repeat = false
                                 )
                             },
-                            1000L * count // because reading often fails
+                            1000L * count // because reading often - fails
                         )
                     }
                     BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE -> {
-                        println(":> PROPERTY_WRITE_NO_RESPONSE")
                     }
                     BluetoothGattCharacteristic.PROPERTY_WRITE -> {
-                        println(":> PROPERTY_WRITE")
                     }
                     BluetoothGattCharacteristic.PROPERTY_NOTIFY -> {
-                        println(":> PROPERTY_NOTIFY")
                     }
                     BluetoothGattCharacteristic.PROPERTY_INDICATE -> {
-                        println(":> PROPERTY_INDICATE")
                     }
                     BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE -> {
-                        println(":> PROPERTY_SIGNED_WRITE")
                     }
                     BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS -> {
-                        println(":> PROPERTY_EXTENDED_PROPS")
                     }
                     else -> println(":> Unknown PROPERTY")
                 }
@@ -167,35 +159,6 @@ class MainActivity : AppCompatActivity() {
                             repeat = false
                         )
                     }
-                }*/
-
-                /*when (characteristic.uuid.toString()) { //TODO-2
-                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_1,
-//                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
-//                    SampleGattAttributes.UUID_CHARACTERISTIC_SERIAL_NUMBER_STRING,
-                    -> {
-
-                        *//*val props: Int = characteristic.properties
-                        print(":> props: $props")
-                        if (props == BluetoothGattCharacteristic.PROPERTY_READ) {
-                            println(":> READ PROPERTY of 1")
-                        }*//*
-
-                        bluetoothService?.readCharacteristic(
-                            characteristic = characteristic,
-                            repeat = false
-                        )
-                    }
-                    SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
-                    -> {
-                    }
-                    *//*SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
-                    -> {
-                        bluetoothService?.writeCharacteristic(
-                            characteristic = characteristic,
-                            repeat = false
-                        )
-                    }*//*
                 }*/
             }
         }
