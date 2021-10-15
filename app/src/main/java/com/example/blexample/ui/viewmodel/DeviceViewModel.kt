@@ -43,6 +43,7 @@ class DeviceViewModel(
     }
 
     private val callableStartScanning = Callable<Unit> {
+        println(":> call start scan le -- (2)")
         leScanner?.startScan(leScanCallback)
     }
     private val callableStopScanning = Callable<Unit> {
@@ -54,7 +55,16 @@ class DeviceViewModel(
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
             _scanResultDevice.value = result.device
+            println(":> call start scan le -- found device  ${result.device}")
+
+            val d = result.device
+            d.uuids
         }
+        override fun onScanFailed(errorCode: Int) {
+            super.onScanFailed(errorCode)
+            println(":> call start scan le -- Failed code $errorCode")
+        }
+
     }
     var currentLeDeviceData: LeDeviceData? = null
         get() = _currentDeviceLiveData.value
@@ -85,6 +95,7 @@ class DeviceViewModel(
     }
 
     private fun callStartScanLe() {
+        println(":> call start scan le")
         _scanningCalled.value = true
 
         handler.postDelayed(runnableForPendingStopScanning, SCAN_PERIOD)

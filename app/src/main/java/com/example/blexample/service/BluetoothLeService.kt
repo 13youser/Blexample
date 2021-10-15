@@ -33,6 +33,8 @@ class BluetoothLeService : Service() {
             "com.example.blexample.bluetooth.le.ACTION_RESULT_CHARA_READ"
         const val ACTION_RESULT_CHARA_WRITE =
             "com.example.blexample.bluetooth.le.ACTION_RESULT_CHARA_WRITE"
+        const val ACTION_RESULT_CHARA_NOTIFICATION =
+            "com.example.blexample.bluetooth.le.ACTION_RESULT_CHARA_NOTIFICATION"
 
         const val EXTRA_DEVICE_CONNECTED = "EXTRA_DEVICE_CONNECTED"
         const val EXTRA_CHARACTERISTIC = "EXTRA_CHARACTERISTIC"
@@ -103,6 +105,38 @@ class BluetoothLeService : Service() {
     fun getSupportedGattServices(): List<BluetoothGattService?>? =
         bluetoothGatt?.services
 
+    /*fun subscribeNotifications(characteristic: BluetoothGattCharacteristic) {
+        bluetoothGatt?.let { gatt ->
+
+            val name = SampleGattAttributes.lookup(
+                uuid = characteristic.uuid.toString(),
+                defaultName = resources.getString(R.string.unknown_characteristic)
+            )
+
+            disposableManager.add(
+                Observable
+                    .fromCallable {
+                        gatt.setCharacteristicNotification(characteristic, true)
+
+
+
+//                        characteristic.value = byteArrayOf(0x01)
+//                        gatt.writeCharacteristic(characteristic)
+                    }
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { Log.d(TAG, ":::+NOTIFICATION Characteristic::> " +
+                                "${if (it) "SUCCESS" else "FAILED"} ($name)")
+                        },
+                        { Log.e(TAG, ":::-NOTIFICATION Characteristic::> " +
+                                "THROWABLE ($name): $it")
+                        }
+                    )
+            )
+        }
+    }*/
+
     fun writeCharacteristic(characteristic: BluetoothGattCharacteristic, repeat: Boolean = false) { //TODO-3 write
         bluetoothGatt?.let { gatt ->
             if (repeat) isRepeatWrite = true
@@ -132,6 +166,25 @@ class BluetoothLeService : Service() {
         }
     }
 
+    fun setCharacteristicNotification(
+        characteristic: BluetoothGattCharacteristic,
+        enabled: Boolean
+    ) {
+        bluetoothGatt?.let { gatt ->
+            gatt.setCharacteristicNotification(characteristic, enabled)
+
+            if (SampleGattAttributes.UUID_CHARACTERISTIC_INCOTEX_WS_SCALES_02 == characteristic.uuid.toString()) {
+                val descriptor = characteristic.getDescriptor(
+                    UUID.fromString(SampleGattAttributes.UUID_DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIG)
+                )
+                descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                gatt.writeDescriptor(descriptor)
+            }
+        } ?: run {
+            Log.w(TAG, "BluetoothGatt not initialized")
+        }
+    }
+
     fun readCharacteristic(characteristic: BluetoothGattCharacteristic, repeat: Boolean = false) {
         bluetoothGatt?.let { gatt ->
             if (repeat) isRepeatRead = true
@@ -143,7 +196,11 @@ class BluetoothLeService : Service() {
 
             disposableManager.add(
                 Observable
-                    .fromCallable { gatt.readCharacteristic(characteristic) }
+                    .fromCallable {
+
+                        gatt.readCharacteristic(characteristic)
+
+                    }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .repeatUntil { !isRepeatRead }
@@ -211,6 +268,12 @@ class BluetoothLeService : Service() {
                     Log.w(TAG, "onCharacteristicWrite received: $status")
             }
         }
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?
+        ) {
+            broadcast(action = ACTION_RESULT_CHARA_NOTIFICATION, characteristic = characteristic)
+        }
     }
 
     private fun broadcast(
@@ -254,23 +317,5 @@ class BluetoothLeService : Service() {
         sendBroadcast(intent)
     }
 
-    fun setCharacteristicNotification(
-        characteristic: BluetoothGattCharacteristic,
-        enabled: Boolean
-    ) {
-        bluetoothGatt?.let { gatt ->
-            gatt.setCharacteristicNotification(characteristic, enabled)
 
-            // This is specific to Heart Rate Measurement.
-            if (SampleGattAttributes.UUID_CHARACTERISTIC_HEART_RATE_MEASUREMENT == characteristic.uuid.toString()) {
-                val descriptor = characteristic.getDescriptor(
-                    UUID.fromString(SampleGattAttributes.UUID_DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIG)
-                )
-                descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                gatt.writeDescriptor(descriptor)
-            }
-        } ?: run {
-            Log.w(TAG, "BluetoothGatt not initialized")
-        }
-    }
 }

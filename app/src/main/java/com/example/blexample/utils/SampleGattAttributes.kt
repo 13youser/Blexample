@@ -35,6 +35,16 @@ object SampleGattAttributes {
     const val UUID_CHARACTERISTIC_WRITE_UUID =                  "f000c0c1-0451-4000-b000-000000000000"
     const val UUID_CHARACTERISTIC_READ_UUID =                   "f000c0c2-0451-4000-b000-000000000000"
 
+
+    // Mercury Scales :: IncotexWS device :: DC:30:07:A8:C9:7D
+    const val UUID_SERVICE_INCOTEX_WS_SCALES_1 = "00000000-0001-11e1-9ab4-0002a5d5c51b"
+    const val UUID_CHARACTERISTIC_INCOTEX_WS_SCALES_01 = "00140000-0001-11e1-ac36-0002a5d5c51b"     // Unknown
+    const val UUID_CHARACTERISTIC_INCOTEX_WS_SCALES_02 = "00c00000-0001-11e1-ac36-0002a5d5c51b"     // NOTIFY
+
+
+
+
+
     private val attributes = hashMapOf<String?, String?>(
         UUID_SERVICE_HEART_RATE to "Heart Rate",
         UUID_CHARACTERISTIC_HEART_RATE_MEASUREMENT to "Heart Rate Measurement",
@@ -65,6 +75,12 @@ object SampleGattAttributes {
         ST_UUID_SERVICE to "Service 128bits UUID",
         ST_UUID_CHARACTERISTIC_1 to "Characteristic_1 128bits UUID",
         ST_UUID_CHARACTERISTIC_2 to "Characteristic_2 128bits UUID",
+
+
+        // Mercury Scales :: IncotexWS device
+        UUID_SERVICE_INCOTEX_WS_SCALES_1 to "Incotex Service 1",
+        UUID_CHARACTERISTIC_INCOTEX_WS_SCALES_01 to "Incotex Characteristic 01",
+        UUID_CHARACTERISTIC_INCOTEX_WS_SCALES_02 to "Incotex Characteristic 02",
     )
 
     /** Find name */

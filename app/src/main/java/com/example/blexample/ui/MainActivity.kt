@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.*
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -17,6 +18,7 @@ import com.example.blexample.data.model.LeDeviceData
 import com.example.blexample.databinding.ActivityMainBinding
 import com.example.blexample.service.BluetoothLeService
 import com.example.blexample.ui.viewmodel.DeviceViewModel
+import com.example.blexample.utils.SampleGattAttributes
 import com.example.blexample.utils.Utils
 import com.incotex.mercurycashbox.ui.base.gone
 import com.incotex.mercurycashbox.ui.base.invisible
@@ -75,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         filter2.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED)
         filter2.addAction(BluetoothLeService.ACTION_RESULT_CHARA_READ)
         filter2.addAction(BluetoothLeService.ACTION_RESULT_CHARA_WRITE)
+        filter2.addAction(BluetoothLeService.ACTION_RESULT_CHARA_NOTIFICATION)
         registerReceiver(gattUpdateReceiver, filter2)
     }
 
@@ -117,7 +120,12 @@ class MainActivity : AppCompatActivity() {
             override fun handleFoundCharacteristic(characteristic: BluetoothGattCharacteristic) {
                 val props: Int = characteristic.properties
 
-                when(props) {
+                /* TODO
+                    как прочитать из характеристики свойства в случае двух свойств, например?
+                */
+
+                //todo
+                /*when(props) {
                     BluetoothGattCharacteristic.PROPERTY_BROADCAST -> {
                     }
                     BluetoothGattCharacteristic.PROPERTY_READ -> {
@@ -146,7 +154,8 @@ class MainActivity : AppCompatActivity() {
                     BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS -> {
                     }
                     else -> println(":> Unknown PROPERTY")
-                }
+                }*/
+
 
                 /*when (chara.uuid.toString()) { //TODO use
                     SampleGattAttributes.ST_UUID_CHARACTERISTIC_2,
@@ -160,6 +169,35 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                 }*/
+
+
+
+                //TODO: read weight
+                when (characteristic.uuid.toString()) {
+                    SampleGattAttributes.UUID_CHARACTERISTIC_INCOTEX_WS_SCALES_02,
+                    -> {
+                        count++
+
+//                        println(":> Read bytes started")
+                        println(":> Notif bytes started")
+
+                        Handler().postDelayed(
+                            {
+//                                bluetoothService?.readCharacteristic(
+//                                    characteristic = characteristic,
+//                                    repeat = true
+//                                )
+//                                bluetoothService?.subscribeNotifications(
+//                                    characteristic = characteristic,
+//                                )
+
+                                bluetoothService?.setCharacteristicNotification(characteristic, true)
+                            },
+                            1000L * count // because reading often - fails
+                        )
+
+                    }
+                }
             }
         }
     }
@@ -223,8 +261,18 @@ class MainActivity : AppCompatActivity() {
                     intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
                     )?.let { data: ByteArray ->
-                        println(":> W Sent data hex: ${Utils.bytesToHexString(bytes = data)}")
+                        println(":> W-Sent data hex: ${Utils.bytesToHexString(bytes = data)}")
                         println(":> W-Sent data ascii: ${Utils.bytesToAsciiString(bytes = data)}")
+                    }
+                }
+                BluetoothLeService.ACTION_RESULT_CHARA_NOTIFICATION -> {
+                    Log.i(TAG, "BLT:: ACTION_RESULT_CHARA_NOTIFICATION")
+
+                    intent.getByteArrayExtra(
+                        BluetoothLeService.EXTRA_CHARACTERISTIC
+                    )?.let { data: ByteArray ->
+                        println(":> Notif data hex: ${Utils.bytesToHexString(bytes = data)}")
+                        println(":> Notif data ascii: ${Utils.bytesToAsciiString(bytes = data)}")
                     }
                 }
                 else -> {
