@@ -23,6 +23,7 @@ import com.example.blexample.utils.Utils
 import com.incotex.mercurycashbox.ui.base.gone
 import com.incotex.mercurycashbox.ui.base.invisible
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.nio.charset.StandardCharsets
 
 class MainActivity : AppCompatActivity() {
 
@@ -172,6 +173,20 @@ class MainActivity : AppCompatActivity() {
 
 
 
+                if (characteristic.uuid.toString() ==
+                    SampleGattAttributes.UUID_CHARACTERISTIC_DEVICE_NAME) {
+
+                        if (characteristic.properties ==
+                            BluetoothGattCharacteristic.PROPERTY_READ) {
+
+                            bluetoothService?.readCharacteristic(
+                                characteristic = characteristic,
+                                repeat = false
+                            )
+                        }
+                }
+
+
                 //TODO: read weight
                 when (characteristic.uuid.toString()) {
                     SampleGattAttributes.UUID_CHARACTERISTIC_INCOTEX_WS_SCALES_02,
@@ -251,6 +266,9 @@ class MainActivity : AppCompatActivity() {
                     intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
                     )?.let { data: ByteArray ->
+
+//                        printTestAscii(data, "R-read")
+
                         println(":> R-read data hex: ${Utils.bytesToHexString(bytes = data)}")
                         println(":> R-read data ascii: ${Utils.bytesToAsciiString(bytes = data)}")
                     }
@@ -271,8 +289,21 @@ class MainActivity : AppCompatActivity() {
                     intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
                     )?.let { data: ByteArray ->
+//                        println(":> Notif data bytes.toString(): $data}")
+
+
+//                        printTestAscii(data, "Notif")
+
                         println(":> Notif data hex: ${Utils.bytesToHexString(bytes = data)}")
                         println(":> Notif data ascii: ${Utils.bytesToAsciiString(bytes = data)}")
+
+//                        val stri: String = String(data, StandardCharsets.UTF_8)
+//                        val stri: String = String(data, StandardCharsets.UTF_16)
+//                        val stri: String = String(data, StandardCharsets.UTF_16BE)
+//                        val stri: String = String(data, StandardCharsets.UTF_16LE)
+//                        val stri: String = String(data, StandardCharsets.US_ASCII)
+//                        val stri: String = String(data, StandardCharsets.ISO_8859_1)
+//                        println(":> Notif data string: $stri")
                     }
                 }
                 else -> {
@@ -283,6 +314,25 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun printTestAscii(data: ByteArray, tag: String) {
+        val humanBuffer: Array<String> = Array(data.size) { "" }
+        data.forEachIndexed { index, byte ->
+            val ascii: String = getPrintAscii(byte.toString())
+            humanBuffer[index] = ascii
+        }
+        println(":> $tag DDD_AAA_TTT_AAA : ${humanBuffer.contentToString()}")
+    }
+
+    val printAscii = mapOf(
+        "44" to ".", "46" to ".", "45" to "-",
+        "48" to "0", "49" to "1", "50" to "2", "51" to "3", "52" to "4",
+        "53" to "5", "54" to "6", "55" to "7", "56" to "8", "57" to "9"
+    )
+    fun getPrintAscii(inChar: String):String {
+//        return printAscii[inChar]?.let { return (it) } ?: return ""
+        return printAscii[inChar] ?: ""
     }
 
     private val bluetoothReceiver: BroadcastReceiver = object : BroadcastReceiver() {

@@ -32,14 +32,14 @@ object Utils {
         "53" to "5", "54" to "6", "55" to "7", "56" to "8", "57" to "9"
     )
 
+    fun bytesToHexString(bytes: ByteArray) = bytes.joinToString(
+        separator = " ",
+        transform = { byte -> String.format("%02X", byte) }
+    )
+
     fun bytesToAsciiString(bytes: ByteArray): String {
         val output = StringBuilder("")
         bytes.forEach { byte -> output.append(byte.toChar()) }
         return output.toString()
     }
-
-    fun bytesToHexString(bytes: ByteArray) = bytes.joinToString(
-        separator = " ",
-        transform = { byte -> String.format("%02X", byte) }
-    )
 }
