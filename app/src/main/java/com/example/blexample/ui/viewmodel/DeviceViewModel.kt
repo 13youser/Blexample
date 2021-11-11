@@ -177,7 +177,7 @@ class DeviceViewModel(
         //val gattCharacteristicData = mutableListOf<ArrayList<HashMap<String, String>>>() //TODO C
 
         // Loops through available GATT Services.
-        var countServise = 0
+        var countService = 0
         gattServices.forEach { gattService ->
             val currentServiceData = hashMapOf<String, String>()
             gattService?.uuid.toString().let { uuid ->
@@ -188,9 +188,9 @@ class DeviceViewModel(
                 //gattServiceData += currentServiceData //TODO S
 
                 // print current Service Data
-                countServise++
+                countService++
                 for ((key, value) in currentServiceData) {
-                    println("$countServise  ::> GATT Service  $key  $value")
+                    println("$countService  ::> GATT Service  $key  $value")
                 }
             }
 

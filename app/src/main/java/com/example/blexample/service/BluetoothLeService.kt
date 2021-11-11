@@ -37,6 +37,7 @@ class BluetoothLeService : Service() {
             "com.example.blexample.bluetooth.le.ACTION_RESULT_CHARA_NOTIFICATION"
 
         const val EXTRA_DEVICE_CONNECTED = "EXTRA_DEVICE_CONNECTED"
+        const val EXTRA_DATA = "EXTRA_DATA"
         const val EXTRA_CHARACTERISTIC = "EXTRA_CHARACTERISTIC"
     }
 
@@ -249,18 +250,30 @@ class BluetoothLeService : Service() {
             characteristic: BluetoothGattCharacteristic?,
             status: Int
         ) {
+
+            val data = characteristic?.value
+
+
             when(status) {
+                BluetoothGatt.GATT_SUCCESS ->
+                    broadcast(action = ACTION_RESULT_CHARA_READ, data = data)
+                else ->
+                    Log.w(TAG, "onCharacteristicRead received: $status")
+            }
+
+            /*when(status) {
                 BluetoothGatt.GATT_SUCCESS ->
                     broadcast(action = ACTION_RESULT_CHARA_READ, characteristic = characteristic)
                 else ->
                     Log.w(TAG, "onCharacteristicRead received: $status")
-            }
+            }*/
         }
         override fun onCharacteristicWrite(
             gatt: BluetoothGatt?,
             characteristic: BluetoothGattCharacteristic?,
             status: Int
         ) {
+            //TODO see: replace pass chara on data (byteArray)
             when(status) {
                 BluetoothGatt.GATT_SUCCESS ->
                     broadcast(action = ACTION_RESULT_CHARA_WRITE, characteristic = characteristic)
@@ -272,6 +285,7 @@ class BluetoothLeService : Service() {
             gatt: BluetoothGatt?,
             characteristic: BluetoothGattCharacteristic?
         ) {
+            //TODO see: replace pass chara on data (byteArray)
             broadcast(action = ACTION_RESULT_CHARA_NOTIFICATION, characteristic = characteristic)
         }
     }
@@ -279,11 +293,12 @@ class BluetoothLeService : Service() {
     private fun broadcast(
         action: String,
         device: BluetoothDevice? = null,
-        characteristic: BluetoothGattCharacteristic? = null
+        characteristic: BluetoothGattCharacteristic? = null,
+        data: ByteArray? = null
     ) {
         val intent = Intent(action)
 
-        device?.let { intent.putExtra(EXTRA_DEVICE_CONNECTED, it) }
+        /*device?.let { intent.putExtra(EXTRA_DEVICE_CONNECTED, it) }
 
         characteristic?.let { chara ->
             when (chara.uuid.toString()) {
@@ -313,7 +328,10 @@ class BluetoothLeService : Service() {
                         Log.w(TAG, "Data empty...")
                 }
             }
-        }
+        }*/
+
+        data?.let { intent.putExtra(EXTRA_DATA, data) }
+
         sendBroadcast(intent)
     }
 

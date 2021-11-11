@@ -263,15 +263,22 @@ class MainActivity : AppCompatActivity() {
                 BluetoothLeService.ACTION_RESULT_CHARA_READ -> {
                     Log.i(TAG, "BLT:: ACTION_RESULT_CHARA_READ")
 
-                    intent.getByteArrayExtra(
+
+                    val byteArray: ByteArray? = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA)
+                    byteArray?.let { data ->
+                        println(":> R-read data hex: ${Utils.bytesToHexString(bytes = data)}")
+                        println(":> R-read data ascii: ${Utils.bytesToAsciiString(bytes = data)}")
+                    }
+
+                    //TODO delll
+                    /*intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
                     )?.let { data: ByteArray ->
-
 //                        printTestAscii(data, "R-read")
 
                         println(":> R-read data hex: ${Utils.bytesToHexString(bytes = data)}")
                         println(":> R-read data ascii: ${Utils.bytesToAsciiString(bytes = data)}")
-                    }
+                    }*/
                 }
                 BluetoothLeService.ACTION_RESULT_CHARA_WRITE -> {
                     Log.i(TAG, "BLT:: ACTION_RESULT_CHARA_WRITE")
