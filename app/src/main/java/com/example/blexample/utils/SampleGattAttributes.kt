@@ -39,7 +39,8 @@ object SampleGattAttributes {
     // Mercury Scales :: IncotexWS device :: DC:30:07:A8:C9:7D
     const val UUID_SERVICE_INCOTEX_WS_SCALES_1 = "00000000-0001-11e1-9ab4-0002a5d5c51b"
     const val UUID_CHARACTERISTIC_INCOTEX_WS_SCALES_01 = "00140000-0001-11e1-ac36-0002a5d5c51b"     // Unknown
-    const val UUID_CHARACTERISTIC_INCOTEX_WS_SCALES_02 = "00c00000-0001-11e1-ac36-0002a5d5c51b"     // NOTIFY
+    //TODO это характеристика Егора по девайсу Scales
+    const val UUID_CHARACTERISTIC_INCOTEX_WS_SCALES_02 = "d973f2e1-b19e-11e2-9e96-0800200c9a66"     // NOTIFY
 
 
 

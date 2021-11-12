@@ -293,6 +293,14 @@ class MainActivity : AppCompatActivity() {
                 BluetoothLeService.ACTION_RESULT_CHARA_NOTIFICATION -> {
                     Log.i(TAG, "BLT:: ACTION_RESULT_CHARA_NOTIFICATION")
 
+
+                    val byteArray: ByteArray? = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA)
+                    byteArray?.let { data ->
+                        println(":> Notif data hex: ${Utils.bytesToHexString(bytes = data)}")
+                        println(":> Notif data ascii: ${Utils.bytesToAsciiString(bytes = data)}")
+                    }
+
+                    //TODO del -----------------------------
                     intent.getByteArrayExtra(
                         BluetoothLeService.EXTRA_CHARACTERISTIC
                     )?.let { data: ByteArray ->

@@ -285,8 +285,13 @@ class BluetoothLeService : Service() {
             gatt: BluetoothGatt?,
             characteristic: BluetoothGattCharacteristic?
         ) {
+            characteristic?.value?.let { charaData ->
+                broadcast(action = ACTION_RESULT_CHARA_NOTIFICATION, data = charaData)
+            }
+
+
             //TODO see: replace pass chara on data (byteArray)
-            broadcast(action = ACTION_RESULT_CHARA_NOTIFICATION, characteristic = characteristic)
+//            broadcast(action = ACTION_RESULT_CHARA_NOTIFICATION, characteristic = characteristic)
         }
     }
 
